@@ -21,7 +21,7 @@ const Navbar = () => {
 
   return (
     <div
-      className="mx-auto
+      className="mx-auto relative
   flex items-center gap-3 p-3 max-w-[1400px] justify-between mb-10
   "
     >
@@ -57,7 +57,7 @@ const Navbar = () => {
             animate={{ opacity: openMenu ? 1 : 0 }}
             transition={{ duration: 0.5 }}
             exit={{ opacity: 0 }}
-            className="w-[90%] max-w-[400px] h-[500px] bg-slate-900 fixed mx-auto top-14 right-5
+            className="w-[90%] max-w-[400px] h-[500px] bg-slate-900 absolute mx-auto top-14 right-5
             rounded-lg z-50 p-5 flex flex-col gap-5 justify-center items-center"
           >
             <button
