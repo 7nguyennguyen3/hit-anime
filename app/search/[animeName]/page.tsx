@@ -46,7 +46,7 @@ const SearchAnimePage = () => {
   }, [keyword]);
 
   return (
-    <div className="px-5 max-w-[1400px] mx-auto">
+    <div className="px-5 max-w-[1400px] min-h-screen mx-auto">
       {fetchingAnime && (
         <h2 className="font-bold text-3xl">Fetching Anime...</h2>
       )}
