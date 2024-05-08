@@ -11,7 +11,7 @@ import { FaArrowRight } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { ImSpinner3 } from "react-icons/im";
 
-const animeIds = [52588, 58080, 53446, 51009, 18689];
+const animeIds = [52588, 58080, 53446, 51009, 18689, 48895];
 
 const Home = () => {
   const [anime, setAnime] = useState<any[]>([]);
@@ -45,12 +45,7 @@ const Home = () => {
         className="w-full max-w-[1000px] mx-auto bg-slate-800 rounded-lg p-5
       flex flex-col gap-5"
       >
-        <Image
-          src="/logo-no-background.svg"
-          alt="Logo Image"
-          width={200}
-          height={100}
-        />
+        <Image src="/logo.png" alt="Logo Image" width={200} height={100} />
         <text className="text-lg font-medium">
           Welcome to Hit Anime! Your friendly anime app using the free and
           almighty Jikan API(MyAnimeList) for searching your next anime. Our
@@ -104,6 +99,7 @@ const Home = () => {
               console.log(anime);
               openDetail(true);
             }}
+            maxSlidesPerView={5}
           />
         )}
         <Link

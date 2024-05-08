@@ -22,22 +22,18 @@ const Navbar = () => {
   return (
     <div
       className="mx-auto
-  flex items-center gap-3 p-3 max-w-[1400px] justify-between
+  flex items-center gap-3 p-3 max-w-[1400px] justify-between mb-10
   "
     >
       <Link href="/">
-        <Image
-          src="/logo-no-background.svg"
-          alt="Logo Image"
-          width={150}
-          height={100}
-        />
+        <Image src="/logo.png" alt="Logo Image" width={150} height={100} />
       </Link>
       <div className="flex items-center gap-3 w-[70%] justify-center xxs:hidden sm:flex">
         <form
           className="flex items-center w-[100%] max-w-[400px] gap-3 relative"
-          onSubmit={() => {
-            event?.preventDefault();
+          onSubmit={(event) => {
+            event.preventDefault();
+            setOpenMenu(false);
             router.push(`/search/${encodeURIComponent(searchInput)}`);
           }}
         >

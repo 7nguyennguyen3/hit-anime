@@ -6,6 +6,8 @@ import { useEffect, useState } from "react";
 import { FaLongArrowAltUp, FaRegQuestionCircle } from "react-icons/fa";
 import { useInView } from "react-intersection-observer";
 import { Anime } from "./page";
+import { motion } from "framer-motion";
+import { useScrollTop } from "../hook";
 
 interface Props {
   selectedAnime: any;
@@ -28,24 +30,12 @@ const ShowTopAiringAnime = ({
   const [showTooltip, setShowTooltip] = useState(false);
   const { ref, inView } = useInView();
 
-  const [showScrollTop, setShowScrollTop] = useState(false);
+  const showScrollTop = useScrollTop();
+  const [renderedItems, setRenderedItems] = useState(0);
 
   const loadMoreAnime = () => {
     setPage(page + 1);
   };
-
-  useEffect(() => {
-    const checkScrollTop = () => {
-      if (!showScrollTop && window.pageYOffset > 400) {
-        setShowScrollTop(true);
-      } else if (showScrollTop && window.pageYOffset <= 400) {
-        setShowScrollTop(false);
-      }
-    };
-
-    window.addEventListener("scroll", checkScrollTop);
-    return () => window.removeEventListener("scroll", checkScrollTop);
-  }, [showScrollTop]);
 
   useEffect(() => {
     if (inView && isInfiniteScroll) {
@@ -79,9 +69,18 @@ const ShowTopAiringAnime = ({
         const response = await axios
           .get(`https://api.jikan.moe/v4/top/anime?page=${page}&limit=20&sfw`)
           .then((res) => res.data);
-        setRecommendationAnime((prevAnime) => [...prevAnime, ...response.data]);
+
+        response.data.forEach((anime: any, index: number) => {
+          setTimeout(() => {
+            setRecommendationAnime((prevAnime) => [...prevAnime, anime]);
+          }, index * 100);
+        });
+
         console.log(response.data);
         setFetchingAnime(false);
+        setRenderedItems(
+          (prevRenderedItems) => prevRenderedItems + response.data.length
+        );
       } catch (error) {
         console.log(error);
         setFetchingAnime(false);
@@ -93,7 +92,7 @@ const ShowTopAiringAnime = ({
 
   return (
     <>
-      <div className="px-5 my-10">
+      <div className="px-5">
         <h2 className="text-2xl font-bold my-5">Top Airing Anime</h2>
         <AnimeSwiper
           animeData={topAiringAnime.filter(
@@ -154,7 +153,7 @@ const ShowTopAiringAnime = ({
               console.log(anime);
               openDetail(true);
             }}
-            loadSlide={true}
+            loadSlide={fetchingAnime}
             onLoadMore={loadMoreAnime}
           />
         ) : (
@@ -171,7 +170,13 @@ const ShowTopAiringAnime = ({
         xl:grid-cols-6"
           >
             {recommendationAnime.map((anime: any, index: number) => (
-              <div
+              <motion.div
+                initial={{ opacity: 0, x: -100 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{
+                  duration: 0.5,
+                  delay: (index - renderedItems) * 0.1,
+                }}
                 className="relative w-full max-w-[240px] h-[100vh] max-h-[300px] rounded-lg overflow-hidden 
               mx-auto hover:scale-105"
                 key={anime.mal_id ? anime.mal_id : index}
@@ -188,10 +193,9 @@ const ShowTopAiringAnime = ({
                   sizes="(max-width: 400px) 100vw, 400px"
                 />
                 <AnimeStarRating anime={anime} />
-              </div>
+              </motion.div>
             ))}
 
-            <div ref={ref} />
             {showScrollTop && (
               <button
                 onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
@@ -202,6 +206,7 @@ const ShowTopAiringAnime = ({
             )}
           </div>
         )}
+        <div ref={ref} />
         {gridView && !isInfiniteScroll && (
           <button
             className="border p-4 w-[300px] my-20 rounded-lg"

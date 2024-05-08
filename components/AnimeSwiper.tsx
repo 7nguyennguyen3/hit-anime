@@ -7,6 +7,7 @@ import Image from "next/image";
 import AnimeStarRating from "@/components/AnimeStarRating";
 import { useSlidesPerView } from "@/app/hook";
 import classNames from "classnames";
+import { motion } from "framer-motion";
 
 interface AnimeSwiperProps {
   animeData: any[];
@@ -14,6 +15,7 @@ interface AnimeSwiperProps {
   loadSlide?: boolean;
   onLoadMore?: () => void;
   fetchingAnime?: boolean;
+  maxSlidesPerView?: number;
 }
 
 const AnimeSwiper = ({
@@ -22,6 +24,7 @@ const AnimeSwiper = ({
   loadSlide,
   onLoadMore,
   fetchingAnime,
+  maxSlidesPerView,
 }: AnimeSwiperProps) => {
   const slidesPerView = useSlidesPerView();
 
@@ -32,18 +35,19 @@ const AnimeSwiper = ({
       }}
       modules={[Pagination]}
       slidesPerView={
-        animeData.length <= 5
-          ? animeData.length
-          : slidesPerView >= 6
-          ? 6
-          : slidesPerView + 0.35
+        slidesPerView >= 6 ? maxSlidesPerView || 6 : slidesPerView + 0.35
       }
       className="h-[100vh] max-h-[330px] w-full b"
     >
       {animeData.map((anime: any, index: number) => (
         <SwiperSlide key={anime.mal_id + index} className="hover:scale-95">
           <button onClick={() => onAnimeClick(anime)}>
-            <div className="relative w-[240px] h-[300px] mx-auto">
+            <motion.div
+              className="relative w-[240px] h-[300px] mx-auto"
+              initial={{ opacity: 0, x: -100 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+            >
               <Image
                 src={anime.images.webp.large_image_url}
                 alt={anime.title}
@@ -53,7 +57,7 @@ const AnimeSwiper = ({
                 className="rounded-lg"
               />
               <AnimeStarRating anime={anime} />
-            </div>
+            </motion.div>
           </button>
         </SwiperSlide>
       ))}

@@ -6,6 +6,9 @@ import React, { useEffect, useState } from "react";
 import ShowAnimeDetail from "../ShowAnimeDetail";
 import { Anime } from "../page";
 import AnimeStarRating from "@/components/AnimeStarRating";
+import { FaLongArrowAltUp } from "react-icons/fa";
+import { useScrollTop } from "@/app/hook";
+import { motion } from "framer-motion";
 
 const SearchAnimePage = () => {
   const [searchAnimeData, setSearchAnimeData] = useState([]);
@@ -15,6 +18,7 @@ const SearchAnimePage = () => {
 
   const [detail, openDetail] = useState(false);
   const [selectedAnime, setSelectedAnime] = useState<Anime | null>(null);
+  const showScrollTop = useScrollTop();
 
   let keyword = "";
   if (typeof searchInput.animeName === "string") {
@@ -65,6 +69,7 @@ const SearchAnimePage = () => {
       <div
         className="
         gap-5
+        relative
         grid
         xxs: grid-cols-1   
         xs:grid-cols-2 
@@ -76,7 +81,10 @@ const SearchAnimePage = () => {
         {searchAnimeData
           .filter((anime: any) => anime.score >= ratingFilter)
           .map((anime: any, index: number) => (
-            <div
+            <motion.div
+              initial={{ opacity: 0, x: -100 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.13 }}
               className="relative w-full max-w-[240px] h-[100vh] max-h-[300px] rounded-lg overflow-hidden 
               mx-auto "
               key={anime.mal_id ? anime.mal_id : index}
@@ -93,13 +101,21 @@ const SearchAnimePage = () => {
                 sizes="(max-width: 400px) 100vw, 400px"
               />
               <AnimeStarRating anime={anime} />
-            </div>
+            </motion.div>
           ))}
         <ShowAnimeDetail
           detail={detail}
           openDetail={openDetail}
           selectedAnime={selectedAnime}
         />
+        {showScrollTop && (
+          <button
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            className="fixed bottom-3 right-3 p-2 bg-blue-500 text-white rounded-full"
+          >
+            <FaLongArrowAltUp className="text-[24px]" />
+          </button>
+        )}
       </div>
     </div>
   );
