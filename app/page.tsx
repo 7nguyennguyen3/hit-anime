@@ -1,18 +1,15 @@
 "use client";
-import AnimeStarRating from "@/components/AnimeStarRating";
 import axios from "axios";
 import Image from "next/image";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Anime } from "./search/page";
 import ShowAnimeDetail from "./search/ShowAnimeDetail";
 
-import "swiper/css";
-import "swiper/css/pagination";
-import { Pagination } from "swiper/modules";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { useSlidesPerView } from "./hook";
-import { FaArrowRight } from "react-icons/fa";
+import AnimeSwiper from "@/components/AnimeSwiper";
 import Link from "next/link";
+import { FaArrowRight } from "react-icons/fa";
+import { motion } from "framer-motion";
+import { ImSpinner3 } from "react-icons/im";
 
 const animeIds = [52588, 58080, 53446, 51009, 18689];
 
@@ -20,20 +17,22 @@ const Home = () => {
   const [anime, setAnime] = useState<any[]>([]);
   const [selectedAnime, setSelectedAnime] = useState<Anime | null>(null);
   const [detail, openDetail] = useState(false);
-  const slidesPerView = useSlidesPerView();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchAnimeByIds = async () => {
       try {
+        setIsLoading(true);
         const animePromises = animeIds.map((id) =>
           axios.get(`https://api.jikan.moe/v4/anime/${id}`)
         );
         const responses = await Promise.all(animePromises);
         const animeData = responses.map((res) => res.data.data);
         setAnime(animeData);
-        console.log(animeData);
+        setIsLoading(false);
       } catch (error) {
         console.error(error);
+        setIsLoading(false);
       }
     };
 
@@ -67,47 +66,46 @@ const Home = () => {
         <text className="font-bold text-3xl red-orange-gradient">
           Creator's Picks
         </text>
-        <Swiper
-          pagination={{
-            dynamicBullets: true,
-          }}
-          modules={[Pagination]}
-          slidesPerView={slidesPerView >= 5 ? 5 : slidesPerView + 0.2}
-          className="h-[100vh] max-h-[330px] w-full b"
-        >
-          {anime
-            .filter(
-              (anime: Anime) =>
-                anime.rating !== "Rx - Hentai" &&
-                anime.rating !== "R+ - Mild Nudity"
-            )
-            .map((anime: any, index: number) => (
-              <SwiperSlide
-                key={anime.mal_id + index}
-                className="hover:scale-95"
-              >
-                <button
-                  onClick={() => {
-                    setSelectedAnime(anime);
-                    console.log(selectedAnime);
-                    openDetail(true);
-                  }}
-                >
-                  <div className="relative w-[240px] h-[300px] mx-auto">
-                    <Image
-                      src={anime.images.webp.large_image_url}
-                      alt={anime.title}
-                      fill
-                      sizes="(max-width: 400px) 100vw, 400px"
-                      quality={100}
-                      className="rounded-lg"
-                    />
-                    <AnimeStarRating anime={anime} />
-                  </div>
-                </button>
-              </SwiperSlide>
-            ))}
-        </Swiper>
+        {isLoading ? (
+          <div
+            className="w-full h-[300px] flex 
+          items-center justify-center rounded-lg gap-3 text-orange-500"
+          >
+            <motion.div
+              animate={{
+                y: ["0%", "30%", "0%"],
+                scale: [1, 1.1, 1],
+              }}
+              transition={{
+                duration: 1,
+                ease: "easeInOut",
+                repeat: Infinity,
+                repeatType: "loop",
+              }}
+            >
+              <text>Fetching Anime...</text>
+            </motion.div>
+            <motion.div
+              animate={{
+                rotate: 360,
+                y: ["0%", "30%", "0%"],
+                scale: [1, 1.3, 1],
+              }}
+              transition={{ duration: 1, repeat: Infinity }}
+            >
+              <ImSpinner3 />
+            </motion.div>
+          </div>
+        ) : (
+          <AnimeSwiper
+            animeData={anime}
+            onAnimeClick={(anime) => {
+              setSelectedAnime(anime);
+              console.log(anime);
+              openDetail(true);
+            }}
+          />
+        )}
         <Link
           href="/search"
           className="p-3 w-full max-w-[300px] rounded-lg border-orange-pop-out

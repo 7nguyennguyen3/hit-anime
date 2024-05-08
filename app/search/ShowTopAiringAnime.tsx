@@ -1,15 +1,11 @@
+import AnimeStarRating from "@/components/AnimeStarRating";
+import AnimeSwiper from "@/components/AnimeSwiper";
 import axios from "axios";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { FaLongArrowAltUp, FaRegQuestionCircle, FaStar } from "react-icons/fa";
-import "swiper/css";
-import "swiper/css/pagination";
-import { Pagination } from "swiper/modules";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Anime } from "./page";
-import AnimeStarRating from "@/components/AnimeStarRating";
+import { FaLongArrowAltUp, FaRegQuestionCircle } from "react-icons/fa";
 import { useInView } from "react-intersection-observer";
-import { useSlidesPerView } from "../hook";
+import { Anime } from "./page";
 
 interface Props {
   selectedAnime: any;
@@ -24,9 +20,8 @@ const ShowTopAiringAnime = ({
 }: Props) => {
   const [topAiringAnime, setTopAiringAnime] = useState([]);
   const [recommendationAnime, setRecommendationAnime] = useState<any[]>([]);
-  const [fetchingAnime, setFetchingAnime] = useState(false);
+  const [fetchingAnime, setFetchingAnime] = useState(true);
   const [page, setPage] = useState(1);
-  const slidesPerView = useSlidesPerView();
 
   const [gridView, setGridView] = useState(false);
   const [isInfiniteScroll, setIsInfiniteScroll] = useState(false);
@@ -34,6 +29,10 @@ const ShowTopAiringAnime = ({
   const { ref, inView } = useInView();
 
   const [showScrollTop, setShowScrollTop] = useState(false);
+
+  const loadMoreAnime = () => {
+    setPage(page + 1);
+  };
 
   useEffect(() => {
     const checkScrollTop = () => {
@@ -76,13 +75,16 @@ const ShowTopAiringAnime = ({
   useEffect(() => {
     const fetchRecommendedAnime = async () => {
       try {
+        setFetchingAnime(true);
         const response = await axios
           .get(`https://api.jikan.moe/v4/top/anime?page=${page}&limit=20&sfw`)
           .then((res) => res.data);
         setRecommendationAnime((prevAnime) => [...prevAnime, ...response.data]);
         console.log(response.data);
+        setFetchingAnime(false);
       } catch (error) {
         console.log(error);
+        setFetchingAnime(false);
       }
     };
 
@@ -93,47 +95,18 @@ const ShowTopAiringAnime = ({
     <>
       <div className="px-5 my-10">
         <h2 className="text-2xl font-bold my-5">Top Airing Anime</h2>
-        <Swiper
-          pagination={{
-            dynamicBullets: true,
+        <AnimeSwiper
+          animeData={topAiringAnime.filter(
+            (anime: Anime) =>
+              anime.rating !== "Rx - Hentai" &&
+              anime.rating !== "R+ - Mild Nudity"
+          )}
+          onAnimeClick={(anime) => {
+            setSelectedAnime(anime);
+            console.log(selectedAnime);
+            openDetail(true);
           }}
-          modules={[Pagination]}
-          slidesPerView={slidesPerView + 0.35}
-          className="h-[100vh] max-h-[330px] w-full b"
-        >
-          {topAiringAnime
-            .filter(
-              (anime: Anime) =>
-                anime.rating !== "Rx - Hentai" &&
-                anime.rating !== "R+ - Mild Nudity"
-            )
-            .map((anime: any, index: number) => (
-              <SwiperSlide
-                key={anime.mal_id + index}
-                className="hover:scale-95"
-              >
-                <button
-                  onClick={() => {
-                    setSelectedAnime(anime);
-                    console.log(selectedAnime);
-                    openDetail(true);
-                  }}
-                >
-                  <div className="relative w-[240px] h-[300px] mx-auto">
-                    <Image
-                      src={anime.images.webp.large_image_url}
-                      alt={anime.title}
-                      fill
-                      sizes="(max-width: 400px) 100vw, 400px"
-                      quality={100}
-                      className="rounded-lg"
-                    />
-                    <AnimeStarRating anime={anime} />
-                  </div>
-                </button>
-              </SwiperSlide>
-            ))}
-        </Swiper>
+        />
       </div>
       <div className="px-5">
         <h2 className="text-2xl font-bold my-5">Recommended Anime</h2>
@@ -155,10 +128,10 @@ const ShowTopAiringAnime = ({
               />
               {showTooltip && (
                 <div
-                  className="z-20 absolute bg-white opacity-90 p-5 rounded-lg top-[25px]
+                  className="z-20 absolute bg-white opacity-90 p-5 rounded-lg top-[25px] left-[-100px]
               w-[200px] text-black font-semibold"
                 >
-                  Turn on to load more anime as you scroll.
+                  Turn on to load more anime as you scroll (Grid View Only).
                 </div>
               )}
             </div>
@@ -173,69 +146,17 @@ const ShowTopAiringAnime = ({
           </div>
         </div>
         {!gridView ? (
-          <Swiper
-            pagination={{
-              dynamicBullets: true,
+          <AnimeSwiper
+            fetchingAnime={fetchingAnime}
+            animeData={recommendationAnime}
+            onAnimeClick={(anime) => {
+              setSelectedAnime(anime);
+              console.log(anime);
+              openDetail(true);
             }}
-            modules={[Pagination]}
-            slidesPerView={slidesPerView + 0.35}
-            className="h-[100vh] max-h-[330px] w-full b"
-          >
-            {recommendationAnime.map((anime: any, index: number) => (
-              <SwiperSlide
-                key={anime.mal_id + index}
-                className="hover:scale-95"
-              >
-                <button
-                  onClick={() => {
-                    setSelectedAnime(anime);
-                    console.log(selectedAnime);
-                    openDetail(true);
-                  }}
-                >
-                  <div className="relative w-[240px] h-[300px] mx-auto">
-                    <Image
-                      src={anime.images.webp.large_image_url}
-                      alt={anime.title}
-                      fill
-                      sizes="(max-width: 400px) 100vw, 400px"
-                      quality={100}
-                      className="rounded-lg"
-                    />
-                    <div
-                      className="w-[60px] h-[30px] bg-white opacity-80 text-black absolute 
-          top-0 left-0 flex items-center rounded-lg"
-                    >
-                      <div className="flex items-center justify-center align-middle px-1 gap-1">
-                        <FaStar className="text-yellow-500 text-lg" />
-                        <text className="text-sm font-semibold">
-                          {anime.score}
-                        </text>
-                      </div>
-                    </div>
-                  </div>
-                </button>
-              </SwiperSlide>
-            ))}
-            <SwiperSlide>
-              <div
-                className="relative w-[240px] h-[300px] border bg-inherit flex 
-            items-center justify-center rounded-lg"
-              >
-                <button
-                  className="border border-white p-2"
-                  disabled={fetchingAnime}
-                  onClick={async () => {
-                    setPage(page + 1);
-                  }}
-                >
-                  <text>
-                    {!fetchingAnime ? "Load More" : "Fetching Anime..."}
-                  </text>
-                </button>
-              </div>
-            </SwiperSlide>
-          </Swiper>
+            loadSlide={true}
+            onLoadMore={loadMoreAnime}
+          />
         ) : (
           <div
             className="

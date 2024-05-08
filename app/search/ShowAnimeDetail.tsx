@@ -17,7 +17,7 @@ const ShowAnimeDetail = ({ detail, selectedAnime, openDetail }: Props) => {
       {detail && selectedAnime && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
           <div
-            className="h-[100vh] w-[90vw] max-w-[800px] xxs:max-h-[400px] xs:max-h-[700px] bg-slate-500 opacity-[96%] 
+            className="h-[100vh] w-[90vw] max-w-[800px] xxs:max-h-[600px] xs:max-h-[700px] bg-slate-500 opacity-[96%] 
           rounded z-20 relative flex flex-col items-center align-middle overflow-y-scroll"
           >
             <button

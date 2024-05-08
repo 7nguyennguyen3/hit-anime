@@ -2,11 +2,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import { useState } from "react";
 import { BiSearch } from "react-icons/bi";
 import { FiMenu } from "react-icons/fi";
 
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import { IoClose } from "react-icons/io5";
 
 const navLinks = [
   { label: "Home", href: "/" },
@@ -60,8 +61,15 @@ const Navbar = () => {
             animate={{ opacity: openMenu ? 1 : 0 }}
             transition={{ duration: 0.5 }}
             exit={{ opacity: 0 }}
-            className="w-[90%] max-w-[400px] h-[500px] bg-slate-900 fixed mx-auto top-14 right-5 rounded-lg z-50 p-5 flex flex-col gap-5 justify-center items-center"
+            className="w-[90%] max-w-[400px] h-[500px] bg-slate-900 fixed mx-auto top-14 right-5
+            rounded-lg z-50 p-5 flex flex-col gap-5 justify-center items-center"
           >
+            <button
+              className="absolute top-5 right-5"
+              onClick={() => setOpenMenu(false)}
+            >
+              <IoClose className="text-[30px]" />
+            </button>
             <div className="flex items-center gap-3 w-[90%] justify-center xxs:flex sm:hidden">
               <form
                 className="flex items-center w-[100%] max-w-[600px] gap-3 relative"
