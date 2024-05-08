@@ -9,7 +9,7 @@ interface Props {
 }
 
 const ShowAnimeDetail = ({ detail, selectedAnime, openDetail }: Props) => {
-  const [showTrailer, setShowTrailer] = useState(false);
+  const [showTrailer, setShowTrailer] = useState(true);
   const [openPopover, setOpenPopover] = useState(false);
 
   return (
@@ -23,7 +23,7 @@ const ShowAnimeDetail = ({ detail, selectedAnime, openDetail }: Props) => {
             <button
               onClick={() => {
                 openDetail(false);
-                setShowTrailer(false);
+                setShowTrailer(true);
               }}
               className="absolute top-5 right-5 text-black z-30"
             >

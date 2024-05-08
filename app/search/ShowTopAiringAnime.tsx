@@ -20,7 +20,7 @@ const ShowTopAiringAnime = ({
 }: Props) => {
   const [topAiringAnime, setTopAiringAnime] = useState([]);
   const [recommendationAnime, setRecommendationAnime] = useState<any[]>([]);
-  const [fetchingAnime, setFetchingAnime] = useState(true);
+  const [fetchingAnime, setFetchingAnime] = useState(false);
   const [page, setPage] = useState(1);
 
   const [gridView, setGridView] = useState(false);
