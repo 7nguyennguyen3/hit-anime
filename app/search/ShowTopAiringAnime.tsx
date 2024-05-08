@@ -177,8 +177,9 @@ const ShowTopAiringAnime = ({
                   duration: 0.5,
                   delay: (index - renderedItems) * 0.1,
                 }}
+                whileHover={{ scale: 0.95 }}
                 className="relative w-full max-w-[240px] h-[100vh] max-h-[300px] rounded-lg overflow-hidden 
-              mx-auto hover:scale-105"
+              mx-auto cursor-pointer"
                 key={anime.mal_id ? anime.mal_id : index}
                 onClick={() => {
                   setSelectedAnime(anime);

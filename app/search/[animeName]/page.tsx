@@ -81,27 +81,31 @@ const SearchAnimePage = () => {
         {searchAnimeData
           .filter((anime: any) => anime.score >= ratingFilter)
           .map((anime: any, index: number) => (
-            <motion.div
-              initial={{ opacity: 0, x: -100 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.13 }}
-              className="relative w-full max-w-[240px] h-[100vh] max-h-[300px] rounded-lg overflow-hidden 
-              mx-auto "
+            <button
+              className="hover:scale-95"
               key={anime.mal_id ? anime.mal_id : index}
-              onClick={() => {
-                setSelectedAnime(anime);
-                openDetail(true);
-              }}
             >
-              <Image
-                src={anime.images.webp.large_image_url}
-                alt={anime.title_english + "Image" || "Anime image"}
-                fill
-                quality={100}
-                sizes="(max-width: 400px) 100vw, 400px"
-              />
-              <AnimeStarRating anime={anime} />
-            </motion.div>
+              <motion.div
+                initial={{ opacity: 0, x: -100 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.13 }}
+                className="relative w-full max-w-[240px] h-[100vh] max-h-[300px] rounded-lg overflow-hidden 
+              mx-auto "
+                onClick={() => {
+                  setSelectedAnime(anime);
+                  openDetail(true);
+                }}
+              >
+                <Image
+                  src={anime.images.webp.large_image_url}
+                  alt={anime.title_english + "Image" || "Anime image"}
+                  fill
+                  quality={100}
+                  sizes="(max-width: 400px) 100vw, 400px"
+                />
+                <AnimeStarRating anime={anime} />
+              </motion.div>
+            </button>
           ))}
         <ShowAnimeDetail
           detail={detail}
