@@ -15,6 +15,11 @@ export type Anime = {
   airing: boolean;
   rating: string;
   synopsis: string;
+  images: {
+    webp: {
+      large_image_url: string;
+    };
+  };
 };
 
 const SearchAnime = () => {

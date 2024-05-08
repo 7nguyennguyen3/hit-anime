@@ -1,7 +1,7 @@
 import axios from "axios";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { FaRegQuestionCircle, FaStar } from "react-icons/fa";
+import { FaLongArrowAltUp, FaRegQuestionCircle, FaStar } from "react-icons/fa";
 import "swiper/css";
 import "swiper/css/pagination";
 import { Pagination } from "swiper/modules";
@@ -9,6 +9,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Anime } from "./page";
 import AnimeStarRating from "@/components/AnimeStarRating";
 import { useInView } from "react-intersection-observer";
+import { useSlidesPerView } from "../hook";
 
 interface Props {
   selectedAnime: any;
@@ -25,26 +26,27 @@ const ShowTopAiringAnime = ({
   const [recommendationAnime, setRecommendationAnime] = useState<any[]>([]);
   const [fetchingAnime, setFetchingAnime] = useState(false);
   const [page, setPage] = useState(1);
+  const slidesPerView = useSlidesPerView();
 
-  const [slidesPerView, setSlidesPerView] = useState(1);
   const [gridView, setGridView] = useState(false);
   const [isInfiniteScroll, setIsInfiniteScroll] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
   const { ref, inView } = useInView();
 
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
   useEffect(() => {
-    const calculateSlidesPerView = () => {
-      const imageView = Math.floor(window.innerWidth / 240);
-      setSlidesPerView(imageView);
+    const checkScrollTop = () => {
+      if (!showScrollTop && window.pageYOffset > 400) {
+        setShowScrollTop(true);
+      } else if (showScrollTop && window.pageYOffset <= 400) {
+        setShowScrollTop(false);
+      }
     };
 
-    calculateSlidesPerView();
-    window.addEventListener("resize", calculateSlidesPerView);
-
-    return () => {
-      window.removeEventListener("resize", calculateSlidesPerView);
-    };
-  }, []);
+    window.addEventListener("scroll", checkScrollTop);
+    return () => window.removeEventListener("scroll", checkScrollTop);
+  }, [showScrollTop]);
 
   useEffect(() => {
     if (inView && isInfiniteScroll) {
@@ -237,6 +239,7 @@ const ShowTopAiringAnime = ({
         ) : (
           <div
             className="
+            relative
         gap-5
         grid
         xxs: grid-cols-1   
@@ -268,14 +271,24 @@ const ShowTopAiringAnime = ({
             ))}
 
             <div ref={ref} />
+            {showScrollTop && (
+              <button
+                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                className="fixed bottom-3 right-3 p-2 bg-blue-500 text-white rounded-full"
+              >
+                <FaLongArrowAltUp className="text-[24px]" />
+              </button>
+            )}
           </div>
         )}
-        <button
-          className="border p-4 w-[300px] mb-20"
-          onClick={() => setPage(page + 1)}
-        >
-          Load More...
-        </button>
+        {gridView && !isInfiniteScroll && (
+          <button
+            className="border p-4 w-[300px] my-20 rounded-lg"
+            onClick={() => setPage(page + 1)}
+          >
+            Load More...
+          </button>
+        )}
       </div>
     </>
   );

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { useState } from "react";
-import { IoClose } from "react-icons/io5";
+import { IoClose, IoInformationCircle } from "react-icons/io5";
 
 interface Props {
   detail: any;
@@ -10,6 +10,7 @@ interface Props {
 
 const ShowAnimeDetail = ({ detail, selectedAnime, openDetail }: Props) => {
   const [showTrailer, setShowTrailer] = useState(false);
+  const [openPopover, setOpenPopover] = useState(false);
 
   return (
     <>
@@ -59,19 +60,42 @@ const ShowAnimeDetail = ({ detail, selectedAnime, openDetail }: Props) => {
                   </span>
                 ))}
               </text>
-              <div className="flex items-center gap-2 xxs:text-sm xs:text-lg">
+              <div className="flex items-center gap-2 text-lg xxs:flex-col xs:flex-row">
                 <button
-                  className="border-2 self-start p-2 rounded-lg font-bold text-yellow-400"
+                  className="border-orange-pop-out self-start p-2 rounded-lg font-bold red-orange-gradient"
                   onClick={() => setShowTrailer(!showTrailer)}
                 >
                   {!showTrailer ? "Show Trailer" : "Show Description"}
                 </button>
-                <Link
-                  href={`https://hianime.to/search?keyword=${selectedAnime.title_english}`}
-                  className="border-2 self-start p-2 rounded-lg font-bold text-yellow-400"
-                >
-                  {`Watch on HiAnime`}
-                </Link>
+
+                <div className="flex items-center self-start gap-2">
+                  <Link
+                    href={`https://hianime.to/search?keyword=${selectedAnime.title_english}`}
+                    className="border-blue-pop-out self-start p-2 rounded-lg "
+                  >
+                    <text className="blue-sky-gradient font-bold">
+                      Watch on HiAnime
+                    </text>
+                  </Link>
+                  <button
+                    className="p-2 relative"
+                    onMouseEnter={() => setOpenPopover(true)}
+                    onMouseLeave={() => setOpenPopover(false)}
+                    onClick={() => setOpenPopover(!openPopover)}
+                  >
+                    <IoInformationCircle className="text-[24px]" />
+                    {openPopover && (
+                      <div
+                        className="w-[160px] h-[60px] bg-white absolute top-10 right-0 
+                      opacity-90 rounded-lg flex justify-center items-center"
+                      >
+                        <text className="z-10 text-black text-sm font-medium p-2">
+                          Redirect you to HiAnime when clicked.
+                        </text>
+                      </div>
+                    )}
+                  </button>
+                </div>
               </div>
 
               {!showTrailer ? (

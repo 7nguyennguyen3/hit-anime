@@ -11,3 +11,21 @@
 .swiper-pagination-bullet {
   background: yellow !important;
 }
+
+@layer utilities {
+  .red-orange-gradient {
+    @apply bg-gradient-to-r from-red-300 to-yellow-300 bg-clip-text text-transparent;
+  }
+
+  .blue-sky-gradient {
+    @apply bg-gradient-to-r from-blue-300 to-sky-300 bg-clip-text text-transparent;
+  }
+
+  .border-orange-pop-out {
+    @apply border border-b-4 border-r-4 border-b-orange-500 border-r-orange-500 border-red-500;
+  }
+
+  .border-blue-pop-out {
+    @apply border border-b-4 border-r-4 border-b-sky-500 border-r-sky-500 border-blue-500;
+  }
+}
