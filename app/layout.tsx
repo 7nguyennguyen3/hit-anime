@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Jost } from "next/font/google";
 import "./globals.css";
 import Footer from "@/components/Footer";
+import QueryClientProvider from "./QueryClientProvider";
 
 const jost = Jost({
   subsets: ["latin"],
@@ -22,9 +23,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={jost.className}>
-        <Navbar />
-        {children}
-        <Footer />
+        <QueryClientProvider>
+          <Navbar />
+          {children}
+          <Footer />
+        </QueryClientProvider>
       </body>
     </html>
   );

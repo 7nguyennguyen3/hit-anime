@@ -7,7 +7,10 @@ import { FaLongArrowAltUp, FaRegQuestionCircle } from "react-icons/fa";
 import { useInView } from "react-intersection-observer";
 import { Anime } from "./page";
 import { motion } from "framer-motion";
-import { useScrollTop } from "../hook";
+import { useFetchTopAiringAnime, useScrollTop } from "../hook";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import AnimeCardGridLayout from "@/components/layout & common components/AnimeCardGridLayout";
+import FetchingAnime from "@/components/layout & common components/FetchingAnime";
 
 interface Props {
   selectedAnime: any;
@@ -20,95 +23,70 @@ const ShowTopAiringAnime = ({
   selectedAnime,
   setSelectedAnime,
 }: Props) => {
-  const [topAiringAnime, setTopAiringAnime] = useState([]);
-  const [recommendationAnime, setRecommendationAnime] = useState<any[]>([]);
-  const [fetchingAnime, setFetchingAnime] = useState(false);
-  const [page, setPage] = useState(1);
-
   const [gridView, setGridView] = useState(false);
   const [isInfiniteScroll, setIsInfiniteScroll] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
   const { ref, inView } = useInView();
 
   const showScrollTop = useScrollTop();
-  const [renderedItems, setRenderedItems] = useState(0);
 
-  const loadMoreAnime = () => {
-    setPage(page + 1);
-  };
+  const { data: topAiringAnime, isLoading: isLoadingTopAiringAnime } =
+    useFetchTopAiringAnime();
+
+  const fetchRecommendedAnime = ({ pageParam = 1 }) =>
+    axios
+      .get(`https://api.jikan.moe/v4/top/anime?page=${pageParam}&limit=20&sfw`)
+      .then((res) => res.data);
+
+  const {
+    data: recommendationAnime,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+  } = useInfiniteQuery({
+    queryKey: ["recommendedAnime"],
+    queryFn: fetchRecommendedAnime,
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.pagination.has_next_page
+        ? lastPage.pagination.current_page + 1
+        : undefined,
+  });
 
   useEffect(() => {
-    if (inView && isInfiniteScroll) {
-      setPage((prevPage) => prevPage + 1);
+    if (inView) {
+      fetchNextPage();
     }
-  }, [inView]);
-
-  useEffect(() => {
-    const fetchTopAiringAnime = async () => {
-      try {
-        setFetchingAnime(true);
-        const response = await axios
-          .get(`https://api.jikan.moe/v4/top/anime?filter=airing&page=1&sfw`)
-          .then((res) => res.data);
-        setTopAiringAnime(response.data);
-        console.log(response.data);
-        setFetchingAnime(false);
-      } catch (error) {
-        console.log(error);
-        setFetchingAnime(false);
-      }
-    };
-
-    fetchTopAiringAnime();
-  }, []);
-
-  useEffect(() => {
-    const fetchRecommendedAnime = async () => {
-      try {
-        setFetchingAnime(true);
-        const response = await axios
-          .get(`https://api.jikan.moe/v4/top/anime?page=${page}&limit=20&sfw`)
-          .then((res) => res.data);
-
-        response.data.forEach((anime: any, index: number) => {
-          setTimeout(() => {
-            setRecommendationAnime((prevAnime) => [...prevAnime, anime]);
-          }, index * 100);
-        });
-
-        console.log(response.data);
-        setFetchingAnime(false);
-        setRenderedItems(
-          (prevRenderedItems) => prevRenderedItems + response.data.length
-        );
-      } catch (error) {
-        console.log(error);
-        setFetchingAnime(false);
-      }
-    };
-
-    fetchRecommendedAnime();
-  }, [page]);
+  }, [inView, fetchNextPage]);
 
   return (
     <>
       <div className="px-5">
-        <h2 className="text-2xl font-bold my-5">Top Airing Anime</h2>
-        <AnimeSwiper
-          animeData={topAiringAnime.filter(
-            (anime: Anime) =>
-              anime.rating !== "Rx - Hentai" &&
-              anime.rating !== "R+ - Mild Nudity"
-          )}
-          onAnimeClick={(anime) => {
-            setSelectedAnime(anime);
-            console.log(selectedAnime);
-            openDetail(true);
-          }}
-        />
+        <h2 className="text-3xl font-bold my-5 hot-gradient">
+          Top Airing Anime
+        </h2>
+        {isLoadingTopAiringAnime ? (
+          <FetchingAnime />
+        ) : (
+          <AnimeSwiper
+            animeData={topAiringAnime.filter(
+              (anime: Anime) =>
+                anime.rating !== "Rx - Hentai" &&
+                anime.rating !== "R+ - Mild Nudity"
+            )}
+            onAnimeClick={(anime) => {
+              setSelectedAnime(anime);
+              console.log(selectedAnime);
+              openDetail(true);
+            }}
+          />
+        )}
       </div>
       <div className="px-5">
-        <h2 className="text-2xl font-bold my-5">Recommended Anime</h2>
+        <h2 className="text-3xl font-bold my-5 cold-gradient">
+          Recommended Anime
+        </h2>
         <div className="flex flex-col my-5">
           <div className="flex items-center">
             <input
@@ -145,57 +123,72 @@ const ShowTopAiringAnime = ({
           </div>
         </div>
         {!gridView ? (
-          <AnimeSwiper
-            fetchingAnime={fetchingAnime}
-            animeData={recommendationAnime}
-            onAnimeClick={(anime) => {
-              setSelectedAnime(anime);
-              console.log(anime);
-              openDetail(true);
-            }}
-            loadSlide={fetchingAnime}
-            onLoadMore={loadMoreAnime}
-          />
-        ) : (
-          <div
-            className="
-            relative
-        gap-5
-        grid
-        xxs: grid-cols-1   
-        xs:grid-cols-2 
-        sm:grid-cols-3 
-        md:grid-cols-4
-        lg:grid-cols-5
-        xl:grid-cols-6"
-          >
-            {recommendationAnime.map((anime: any, index: number) => (
-              <motion.div
-                initial={{ opacity: 0, x: -100 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{
-                  duration: 0.5,
-                  delay: (index - renderedItems) * 0.1,
-                }}
-                whileHover={{ scale: 0.95 }}
-                className="relative w-full max-w-[240px] h-[100vh] max-h-[300px] rounded-lg overflow-hidden 
-              mx-auto cursor-pointer"
-                key={anime.mal_id ? anime.mal_id : index}
-                onClick={() => {
+          isLoading ? (
+            <FetchingAnime />
+          ) : (
+            <>
+              <AnimeSwiper
+                isInfiniteScroll={isInfiniteScroll}
+                ref={ref}
+                animeData={
+                  recommendationAnime?.pages.flatMap((page) => page.data) || []
+                }
+                onAnimeClick={(anime) => {
                   setSelectedAnime(anime);
+                  console.log(anime);
                   openDetail(true);
                 }}
-              >
-                <Image
-                  src={anime.images.webp.large_image_url}
-                  alt={anime.title_english + "Image" || "Anime image"}
-                  fill
-                  quality={100}
-                  sizes="(max-width: 400px) 100vw, 400px"
-                />
-                <AnimeStarRating anime={anime} />
-              </motion.div>
-            ))}
+              />
+              <div ref={ref} />
+              <div className="w-full flex items-center justify-center">
+                <button
+                  className="border-blue-pop-out p-4 w-[200px] my-20 rounded-lg"
+                  onClick={() => fetchNextPage()}
+                  disabled={!hasNextPage || isFetchingNextPage}
+                >
+                  {isFetchingNextPage
+                    ? "Loading more..."
+                    : hasNextPage
+                    ? "Load More"
+                    : "Nothing more to load"}
+                </button>
+              </div>
+            </>
+          )
+        ) : (
+          <AnimeCardGridLayout>
+            {recommendationAnime?.pages
+              .flatMap((page) => page.data)
+              .map((anime: any, index: number) => (
+                <button
+                  className="hover:scale-95"
+                  key={anime.mal_id ? anime.mal_id : index}
+                >
+                  <motion.div
+                    initial={{ opacity: 0, x: -100 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{
+                      duration: 0.5,
+                      // delay: index * 0.1,
+                    }}
+                    className="relative w-full max-w-[240px] h-[100vh] max-h-[300px] rounded-lg overflow-hidden 
+        mx-auto cursor-pointer"
+                    onClick={() => {
+                      setSelectedAnime(anime);
+                      openDetail(true);
+                    }}
+                  >
+                    <Image
+                      src={anime.images.webp?.large_image_url || ""}
+                      alt={anime.title_english + "Image" || "Anime image"}
+                      fill
+                      quality={100}
+                      sizes="(max-width: 400px) 100vw, 400px"
+                    />
+                    <AnimeStarRating anime={anime} />
+                  </motion.div>
+                </button>
+              ))}
 
             {showScrollTop && (
               <button
@@ -205,16 +198,23 @@ const ShowTopAiringAnime = ({
                 <FaLongArrowAltUp className="text-[24px]" />
               </button>
             )}
-          </div>
+          </AnimeCardGridLayout>
         )}
-        <div ref={ref} />
+        {isInfiniteScroll && <div ref={ref} />}
         {gridView && !isInfiniteScroll && (
-          <button
-            className="border p-4 w-[300px] my-20 rounded-lg"
-            onClick={() => setPage(page + 1)}
-          >
-            Load More...
-          </button>
+          <div className="w-full flex items-center justify-center">
+            <button
+              className="border-blue-pop-out p-4 w-[200px] my-20 rounded-lg"
+              onClick={() => fetchNextPage()}
+              disabled={!hasNextPage || isFetchingNextPage}
+            >
+              {isFetchingNextPage
+                ? "Loading more..."
+                : hasNextPage
+                ? "Load More"
+                : "Nothing more to load"}
+            </button>
+          </div>
         )}
       </div>
     </>

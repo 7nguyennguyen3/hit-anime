@@ -21,6 +21,14 @@
     @apply bg-gradient-to-r from-blue-300 to-sky-300 bg-clip-text text-transparent;
   }
 
+  .cold-gradient {
+    @apply bg-gradient-to-b from-blue-600 to-green-400 bg-clip-text text-transparent;
+  }
+
+  .hot-gradient {
+    @apply bg-gradient-to-b from-red-600 to-yellow-400 bg-clip-text text-transparent;
+  }
+
   .border-orange-pop-out {
     @apply border border-b-4 border-r-4 border-b-orange-500 border-r-orange-500 border-red-500;
   }

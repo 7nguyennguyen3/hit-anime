@@ -1,43 +1,19 @@
 "use client";
-import axios from "axios";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Anime } from "./search/page";
 import ShowAnimeDetail from "./search/ShowAnimeDetail";
 
 import AnimeSwiper from "@/components/AnimeSwiper";
+import FetchingAnime from "@/components/layout & common components/FetchingAnime";
 import Link from "next/link";
 import { FaArrowRight } from "react-icons/fa";
-import { motion } from "framer-motion";
-import { ImSpinner3 } from "react-icons/im";
-
-const animeIds = [52588, 58080, 53446, 51009, 18689, 48895];
+import { useFetchAnimeByIds } from "./hook";
 
 const Home = () => {
-  const [anime, setAnime] = useState<any[]>([]);
   const [selectedAnime, setSelectedAnime] = useState<Anime | null>(null);
   const [detail, openDetail] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchAnimeByIds = async () => {
-      try {
-        setIsLoading(true);
-        const animePromises = animeIds.map((id) =>
-          axios.get(`https://api.jikan.moe/v4/anime/${id}`)
-        );
-        const responses = await Promise.all(animePromises);
-        const animeData = responses.map((res) => res.data.data);
-        setAnime(animeData);
-        setIsLoading(false);
-      } catch (error) {
-        console.error(error);
-        setIsLoading(false);
-      }
-    };
-
-    fetchAnimeByIds();
-  }, []);
+  const { data: anime = [], isLoading } = useFetchAnimeByIds();
 
   return (
     <div className="p-5 max-w-[1400px] min-h-screen mx-auto">
@@ -62,35 +38,7 @@ const Home = () => {
           Creator's Picks
         </text>
         {isLoading ? (
-          <div
-            className="w-full h-[300px] flex 
-          items-center justify-center rounded-lg gap-3 text-orange-500"
-          >
-            <motion.div
-              animate={{
-                y: ["0%", "30%", "0%"],
-                scale: [1, 1.1, 1],
-              }}
-              transition={{
-                duration: 1,
-                ease: "easeInOut",
-                repeat: Infinity,
-                repeatType: "loop",
-              }}
-            >
-              <text>Fetching Anime...</text>
-            </motion.div>
-            <motion.div
-              animate={{
-                rotate: 360,
-                y: ["0%", "30%", "0%"],
-                scale: [1, 1.3, 1],
-              }}
-              transition={{ duration: 1, repeat: Infinity }}
-            >
-              <ImSpinner3 />
-            </motion.div>
-          </div>
+          <FetchingAnime />
         ) : (
           <AnimeSwiper
             animeData={anime}

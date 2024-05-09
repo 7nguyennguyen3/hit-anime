@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { useState } from "react";
+import { CgPlayButtonO } from "react-icons/cg";
 import { IoClose, IoInformationCircle } from "react-icons/io5";
 
 interface Props {
@@ -112,14 +113,18 @@ const ShowAnimeDetail = ({ detail, selectedAnime, openDetail }: Props) => {
                       Video Unavailable
                     </div>
                   ) : (
-                    <iframe
-                      className="rounded-lg"
-                      width="100%"
-                      height="300px"
-                      src={`${selectedAnime.trailer.embed_url}&autoplay=0`}
-                      allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    />
+                    <div
+                      className="w-full h-[300px] flex items-center justify-center border bg-cover rounded-lg"
+                      style={{
+                        backgroundImage: `url(${selectedAnime.trailer.images.large_image_url})`,
+                        backgroundPosition: "center",
+                      }}
+                      onClick={() =>
+                        window.open(selectedAnime.trailer.url, "_blank")
+                      }
+                    >
+                      <CgPlayButtonO className="text-[60px] text-red-400" />
+                    </div>
                   )}
                 </>
               )}

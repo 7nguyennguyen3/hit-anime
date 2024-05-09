@@ -9,6 +9,7 @@ import AnimeStarRating from "@/components/AnimeStarRating";
 import { FaLongArrowAltUp } from "react-icons/fa";
 import { useScrollTop } from "@/app/hook";
 import { motion } from "framer-motion";
+import AnimeCardGridLayout from "@/components/layout & common components/AnimeCardGridLayout";
 
 const SearchAnimePage = () => {
   const [searchAnimeData, setSearchAnimeData] = useState([]);
@@ -66,18 +67,7 @@ const SearchAnimePage = () => {
         />
         <span className="ml-2">{ratingFilter}</span>
       </div>
-      <div
-        className="
-        gap-5
-        relative
-        grid
-        xxs: grid-cols-1   
-        xs:grid-cols-2 
-        sm:grid-cols-3 
-        md:grid-cols-4
-        lg:grid-cols-5
-        xl:grid-cols-6"
-      >
+      <AnimeCardGridLayout>
         {searchAnimeData
           .filter((anime: any) => anime.score >= ratingFilter)
           .map((anime: any, index: number) => (
@@ -120,7 +110,7 @@ const SearchAnimePage = () => {
             <FaLongArrowAltUp className="text-[24px]" />
           </button>
         )}
-      </div>
+      </AnimeCardGridLayout>
     </div>
   );
 };
