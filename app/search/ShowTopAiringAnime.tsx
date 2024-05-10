@@ -33,7 +33,7 @@ const ShowTopAiringAnime = ({
   const { data: topAiringAnime, isLoading: isLoadingTopAiringAnime } =
     useFetchTopAiringAnime();
 
-  const fetchRecommendedAnime = ({ pageParam = 1 }) =>
+  const fetchRecommendedAnime = ({ pageParam }: { pageParam: number }) =>
     axios
       .get(`https://api.jikan.moe/v4/top/anime?page=${pageParam}&limit=20&sfw`)
       .then((res) => res.data);

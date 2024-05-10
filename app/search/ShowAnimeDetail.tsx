@@ -19,7 +19,7 @@ const ShowAnimeDetail = ({ detail, selectedAnime, openDetail }: Props) => {
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
           <div
             className="h-[100vh] w-[90vw] max-w-[800px] xxs:max-h-[600px] xs:max-h-[700px] bg-slate-500 opacity-[96%] 
-          rounded z-20 relative flex flex-col items-center align-middle overflow-y-scroll"
+          rounded z-20 relative flex flex-col items-center align-middle overflow-y-scroll scrollbar-hide"
           >
             <button
               onClick={() => {
@@ -44,7 +44,10 @@ const ShowAnimeDetail = ({ detail, selectedAnime, openDetail }: Props) => {
                   : selectedAnime.episodes}
               </text>
               <text className="text-lg">
-                <strong>Rating:</strong> {selectedAnime.score}
+                <strong>Score⭐:</strong> {selectedAnime.score}
+              </text>
+              <text className="text-lg">
+                <strong>Rating:</strong> {selectedAnime.rating}
               </text>
               <text className="text-lg">
                 <strong>Airing:</strong>{" "}
@@ -70,14 +73,14 @@ const ShowAnimeDetail = ({ detail, selectedAnime, openDetail }: Props) => {
                 </button>
 
                 <div className="flex items-center self-start gap-2">
-                  <Link
+                  <a
                     href={`https://hianime.to/search?keyword=${selectedAnime.title_english}`}
-                    className="border-blue-pop-out self-start p-2 rounded-lg "
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="border-blue-pop-out self-start p-2 rounded-lg blue-sky-gradient font-bold"
                   >
-                    <text className="blue-sky-gradient font-bold">
-                      Watch on HiAnime
-                    </text>
-                  </Link>
+                    Watch on HiAnime
+                  </a>
                   <button
                     className="p-2 relative"
                     onMouseEnter={() => setOpenPopover(true)}
@@ -119,11 +122,15 @@ const ShowAnimeDetail = ({ detail, selectedAnime, openDetail }: Props) => {
                         backgroundImage: `url(${selectedAnime.trailer.images.large_image_url})`,
                         backgroundPosition: "center",
                       }}
-                      onClick={() =>
-                        window.open(selectedAnime.trailer.url, "_blank")
-                      }
+                      onClick={() => {
+                        const newWindow = window.open(
+                          selectedAnime.trailer.url,
+                          "_blank"
+                        );
+                        if (newWindow) newWindow.opener = null;
+                      }}
                     >
-                      <CgPlayButtonO className="text-[60px] text-red-400" />
+                      <CgPlayButtonO className="text-[60px] text-red-400 hover:cursor-pointer" />
                     </div>
                   )}
                 </>

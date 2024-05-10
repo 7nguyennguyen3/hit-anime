@@ -36,4 +36,11 @@
   .border-blue-pop-out {
     @apply border border-b-4 border-r-4 border-b-sky-500 border-r-sky-500 border-blue-500;
   }
+
+  .border-pop-out {
+    @apply border border-b-4 border-r-4;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    @apply hidden;
+  }
 }

@@ -41,7 +41,7 @@ export const useScrollTop = () => {
   return showScrollTop;
 };
 
-const animeIds = [52588, 58080, 53446, 51009, 18689, 48895];
+const animeIds = [52588, 58080, 53446, 51009, 18689, 48895, 32182];
 
 export const useFetchAnimeByIds = () => {
   return useQuery({
@@ -71,3 +71,34 @@ export const useFetchTopAiringAnime = () => {
     retry: 2,
   });
 };
+
+export const useFetchSearchAnime = (keyword: string) => {
+  return useQuery({
+    queryKey: ["searchAnime", keyword],
+    queryFn: async () => {
+      const response = await axios.get(
+        `https://api.jikan.moe/v4/anime?q=${keyword}&sfw`
+      );
+
+      return response.data.data;
+    },
+    staleTime: 1000 * 60 * 30,
+    retry: 2,
+  });
+};
+
+export function useDebounce(value: any, delay: number) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}

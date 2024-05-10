@@ -60,11 +60,6 @@ const AnimeSwiper = ({
             </button>
           </SwiperSlide>
         ))}
-      {/* {isInfiniteScroll && (
-        <SwiperSlide>
-          <div ref={ref} />
-        </SwiperSlide>
-      )} */}
     </Swiper>
   );
 };

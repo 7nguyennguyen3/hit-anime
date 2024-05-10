@@ -6,18 +6,115 @@ import { useState } from "react";
 import { BiSearch } from "react-icons/bi";
 import { FiMenu } from "react-icons/fi";
 
+import { useDebounce, useFetchSearchAnime } from "@/app/hook";
+import ShowAnimeDetail from "@/app/search/ShowAnimeDetail";
+import { Anime } from "@/app/search/page";
 import { AnimatePresence, motion } from "framer-motion";
 import { IoClose } from "react-icons/io5";
+import FetchingAnime from "./layout & common components/FetchingAnime";
 
 const navLinks = [
   { label: "Home", href: "/" },
-  { label: "Search", href: "/search" },
+  { label: "Browse", href: "/search" },
 ];
 
 const Navbar = () => {
   const router = useRouter();
   const [searchInput, setSearchInput] = useState("");
   const [openMenu, setOpenMenu] = useState(false);
+
+  const [detail, openDetail] = useState(false);
+  const [selectedAnime, setSelectedAnime] = useState<Anime | null>(null);
+  const [isInputFocused, setIsInputFocused] = useState(false);
+
+  const debouncedSearchInput = useDebounce(searchInput, 1000);
+  const { data: searchAnime, isLoading } =
+    useFetchSearchAnime(debouncedSearchInput);
+
+  const searchBarForm = (
+    <form
+      className="flex items-center w-[100%] max-w-[400px] gap-3 relative"
+      onSubmit={(event) => {
+        event.preventDefault();
+        setSearchInput("");
+        setOpenMenu(false);
+        router.push(`/search/${encodeURIComponent(searchInput)}`);
+      }}
+    >
+      <input
+        placeholder="Search for an anime"
+        className="p-2 pr-10 text-black rounded-lg w-full"
+        value={searchInput}
+        onChange={(e) => setSearchInput(e.target.value)}
+        onFocus={() => setIsInputFocused(true)}
+        onBlur={() => setIsInputFocused(false)}
+      />
+      <button type="submit" className="absolute z-10 right-2">
+        <BiSearch size={25} className="text-black" />
+      </button>
+      {isInputFocused && searchInput !== "" && (
+        <div
+          className="absolute w-full max-w-[400px] h-[400px] bg-slate-600 top-12
+    rounded-lg p-3 overflow-y-scroll flex flex-col gap-3 z-10 scrollbar-hide"
+        >
+          {isLoading ? (
+            <FetchingAnime />
+          ) : (
+            searchAnime &&
+            searchAnime
+              .filter((anime: any) => anime.score >= 6)
+              .map((anime: any) => (
+                <div key={anime.mal_id} className="flex items-center gap-3">
+                  <div
+                    className="flex xxs:gap-2 sm:gap-10 items-center xxs:flex-col xs:flex-row w-full 
+                  xxs:mb-10 xs:mb-5"
+                  >
+                    <div
+                      key={anime.mal_id}
+                      className="relative min-h-[200px] max-w-[140px] w-[100%] hover:scale-105"
+                      onMouseDown={() => {
+                        openDetail(true);
+                        setSelectedAnime(anime);
+                      }}
+                    >
+                      <Image
+                        src={anime.images.webp.image_url}
+                        alt={anime.title_english || "Anime Image"}
+                        fill
+                        sizes="(max-width: 400px) 100vw, 400px"
+                        quality={100}
+                        className="rounded-lg border-pop-out hover:cursor-pointer"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <div className="flex justify-between items-center">
+                        <text className="text-yellow-400">
+                          ⭐ {anime.score}
+                        </text>
+                        <text className="font-semibold">
+                          Ep: {anime.episodes}
+                        </text>
+                      </div>
+                      <text className="text-[13px] font-semibold">
+                        {anime.rating}
+                      </text>
+                      <text
+                        className="w-[160px] max-h-[200px] overflow-hidden border-pop-out 
+                      rounded-lg self-start p-1"
+                      >
+                        {anime.title_english
+                          ? anime.title_english
+                          : anime.title}
+                      </text>
+                    </div>
+                  </div>
+                </div>
+              ))
+          )}
+        </div>
+      )}
+    </form>
+  );
 
   return (
     <div
@@ -29,23 +126,7 @@ const Navbar = () => {
         <Image src="/logo.png" alt="Logo Image" width={150} height={100} />
       </Link>
       <div className="flex items-center gap-3 w-[70%] justify-center xxs:hidden sm:flex">
-        <form
-          className="flex items-center w-[100%] max-w-[400px] gap-3 relative"
-          onSubmit={(event) => {
-            event.preventDefault();
-            setOpenMenu(false);
-            router.push(`/search/${encodeURIComponent(searchInput)}`);
-          }}
-        >
-          <input
-            placeholder="Search for an anime"
-            className="p-2 pr-10 text-black rounded-lg w-full"
-            onChange={(e) => setSearchInput(e.target.value)}
-          />
-          <button type="submit" className="absolute z-10 right-2">
-            <BiSearch size={25} className="text-black" />
-          </button>
-        </form>
+        {searchBarForm}
       </div>
       <div className="hover:scale-110" onClick={() => setOpenMenu(!openMenu)}>
         <FiMenu className="text-[40px]" />
@@ -67,22 +148,7 @@ const Navbar = () => {
               <IoClose className="text-[30px]" />
             </button>
             <div className="flex items-center gap-3 w-[90%] justify-center xxs:flex sm:hidden">
-              <form
-                className="flex items-center w-[100%] max-w-[600px] gap-3 relative"
-                onSubmit={() => {
-                  event?.preventDefault();
-                  router.push(`/search/${encodeURIComponent(searchInput)}`);
-                }}
-              >
-                <input
-                  placeholder="Search for an anime"
-                  className="p-3 pr-10 text-black rounded-lg w-full"
-                  onChange={(e) => setSearchInput(e.target.value)}
-                />
-                <button type="submit" className="absolute z-10 right-2">
-                  <BiSearch size={25} className="text-black" />
-                </button>
-              </form>
+              {searchBarForm}
             </div>
             <div className="flex flex-col gap-3">
               {navLinks.map((link) => (
@@ -96,6 +162,12 @@ const Navbar = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <ShowAnimeDetail
+        detail={detail}
+        openDetail={openDetail}
+        selectedAnime={selectedAnime}
+      />
     </div>
   );
 };
