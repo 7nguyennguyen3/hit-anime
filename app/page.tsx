@@ -1,14 +1,14 @@
 "use client";
 import Image from "next/image";
 import { useState } from "react";
-import { Anime } from "./search/page";
-import ShowAnimeDetail from "./search/ShowAnimeDetail";
 
 import AnimeSwiper from "@/components/AnimeSwiper";
 import FetchingAnime from "@/components/layout & common components/FetchingAnime";
 import Link from "next/link";
 import { FaArrowRight } from "react-icons/fa";
 import { useFetchAnimeByIds } from "./hook";
+import { Anime } from "./browse/page";
+import ShowAnimeDetail from "./browse/ShowAnimeDetail";
 
 const Home = () => {
   const [selectedAnime, setSelectedAnime] = useState<Anime | null>(null);
@@ -37,7 +37,7 @@ const Home = () => {
         <text className="font-bold text-3xl red-orange-gradient">
           Creator's Picks
         </text>
-        {isLoading ? (
+        {isLoading || !anime.length ? (
           <FetchingAnime />
         ) : (
           <AnimeSwiper
@@ -51,7 +51,7 @@ const Home = () => {
           />
         )}
         <Link
-          href="/search"
+          href="/browse"
           className="p-3 w-full max-w-[300px] rounded-lg border-orange-pop-out
         flex items-center gap-2 justify-center hover:scale-110"
         >

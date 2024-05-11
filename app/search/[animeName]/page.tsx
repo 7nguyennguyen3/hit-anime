@@ -8,8 +8,8 @@ import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { FaLongArrowAltUp } from "react-icons/fa";
-import ShowAnimeDetail from "../ShowAnimeDetail";
-import { Anime } from "../page";
+import ShowAnimeDetail from "../../browse/ShowAnimeDetail";
+import { Anime } from "../../browse/page";
 
 const SearchAnimePage = () => {
   const searchInput = useParams();

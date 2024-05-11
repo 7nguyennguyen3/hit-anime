@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
 export const useSlidesPerView = () => {
   const [slidesPerView, setSlidesPerView] = useState(1);
@@ -47,10 +47,14 @@ export const useFetchAnimeByIds = () => {
   return useQuery({
     queryKey: ["anime", animeIds],
     queryFn: async () => {
-      const animePromises = animeIds.map((id) =>
-        axios.get(`https://api.jikan.moe/v4/anime/${id}`)
-      );
-      const responses = await Promise.all(animePromises);
+      const responses = [];
+      for (const id of animeIds) {
+        const response = await axios.get(
+          `https://api.jikan.moe/v4/anime/${id}`
+        );
+        responses.push(response);
+        await new Promise((resolve) => setTimeout(resolve, 350));
+      }
       return responses.map((res) => res.data.data);
     },
     staleTime: 1000 * 60 * 30,
@@ -101,4 +105,29 @@ export function useDebounce(value: any, delay: number) {
   }, [value, delay]);
 
   return debouncedValue;
+}
+
+export function useSearchAnime(filter: any) {
+  const fetchRecommendedAnime = ({ pageParam }: { pageParam: number }) =>
+    axios
+      .get(`https://api.jikan.moe/v4/anime?page=${pageParam}`, {
+        params: filter,
+      })
+      .then((res) => res.data);
+
+  return useInfiniteQuery({
+    queryKey: [
+      "searchAnime",
+      filter.status,
+      Array.from(filter.genres).join(","),
+      filter.debouncedValue,
+    ],
+    queryFn: fetchRecommendedAnime,
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      return lastPage.pagination.has_next_page
+        ? lastPage.pagination.current_page + 1
+        : undefined;
+    },
+  });
 }
