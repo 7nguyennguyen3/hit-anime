@@ -23,8 +23,8 @@ const ShowTopAiringAnime = ({
   selectedAnime,
   setSelectedAnime,
 }: Props) => {
-  const [gridView, setGridView] = useState(false);
-  const [isInfiniteScroll, setIsInfiniteScroll] = useState(false);
+  const [gridView, setGridView] = useState(true);
+  const [isInfiniteScroll, setIsInfiniteScroll] = useState(true);
   const [showTooltip, setShowTooltip] = useState(false);
   const { ref, inView } = useInView();
 

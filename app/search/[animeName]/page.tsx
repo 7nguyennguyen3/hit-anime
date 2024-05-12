@@ -10,6 +10,8 @@ import { useState } from "react";
 import { FaLongArrowAltUp } from "react-icons/fa";
 import ShowAnimeDetail from "../../browse/ShowAnimeDetail";
 import { Anime } from "../../browse/page";
+import Link from "next/link";
+import { FaArrowRight } from "react-icons/fa6";
 
 const SearchAnimePage = () => {
   const searchInput = useParams();
@@ -28,7 +30,17 @@ const SearchAnimePage = () => {
 
   return (
     <div className="px-5 max-w-[1400px] min-h-screen mx-auto relative">
-      <h2 className="font-bold text-3xl my-5">result: "{keyword}"</h2>
+      <Link
+        href="/search"
+        className="border p-3 rounded-lg border-orange-pop-out flex items-center gap-2 max-w-[250px]
+        hover:scale-110"
+      >
+        <text className="red-orange-gradient text-xl font-semibold">
+          Try Advance Search
+        </text>
+        <FaArrowRight className="text-yellow-500" />
+      </Link>
+      <h2 className="font-bold text-3xl my-5 mt-10">result: "{keyword}"</h2>
       <div className="flex items-center my-5 gap-3">
         <label htmlFor="ratingFilter" className="mr-2">
           Minimum Rating:

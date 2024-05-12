@@ -1,6 +1,9 @@
+import classNames from "classnames";
 import Link from "next/link";
 import { useState } from "react";
 import { CgPlayButtonO } from "react-icons/cg";
+import { FaArrowRotateRight } from "react-icons/fa6";
+import { IoMdSwitch } from "react-icons/io";
 import { IoClose, IoInformationCircle } from "react-icons/io5";
 
 interface Props {
@@ -12,6 +15,7 @@ interface Props {
 const ShowAnimeDetail = ({ detail, selectedAnime, openDetail }: Props) => {
   const [showTrailer, setShowTrailer] = useState(true);
   const [openPopover, setOpenPopover] = useState(false);
+  const [showEnglishTitle, setShowEnglishTitle] = useState(true);
 
   return (
     <>
@@ -25,18 +29,44 @@ const ShowAnimeDetail = ({ detail, selectedAnime, openDetail }: Props) => {
               onClick={() => {
                 openDetail(false);
                 setShowTrailer(true);
+                setShowEnglishTitle(true);
               }}
               className="absolute top-5 right-5 text-black z-30"
             >
               <IoClose size={30} />
             </button>
             <div className="flex flex-col p-5 gap-3 w-full mt-10">
+              <div className="flex font-semibold text-[13px]">
+                <div
+                  className={classNames(
+                    "w-[80px] h-[40px] items-center flex border-pop-out rounded-l-full justify-center cursor-pointer",
+                    {
+                      "bg-green-800 scale-105": showEnglishTitle,
+                    }
+                  )}
+                  onClick={() => setShowEnglishTitle(true)}
+                >
+                  English
+                </div>
+                <div
+                  className={classNames(
+                    "w-[80px] h-[40px] items-center flex border-pop-out rounded-r-full justify-center cursor-pointer",
+                    {
+                      "bg-green-800 scale-105": !showEnglishTitle,
+                    }
+                  )}
+                  onClick={() => setShowEnglishTitle(false)}
+                >
+                  Japanese
+                </div>
+              </div>
               <text className="text-lg">
                 <strong>Title:</strong>{" "}
-                {selectedAnime.title_english === null
-                  ? selectedAnime.title
-                  : selectedAnime.title_english}
+                {showEnglishTitle
+                  ? selectedAnime.title_english || selectedAnime.title
+                  : selectedAnime.title}
               </text>
+
               <text className="text-lg">
                 <strong>Episode:</strong>{" "}
                 {selectedAnime.episodes === null
@@ -74,7 +104,11 @@ const ShowAnimeDetail = ({ detail, selectedAnime, openDetail }: Props) => {
 
                 <div className="flex items-center self-start gap-2">
                   <a
-                    href={`https://hianime.to/search?keyword=${selectedAnime.title_english}`}
+                    href={`https://hianime.to/search?keyword=${
+                      selectedAnime.title_english
+                        ? selectedAnime.title_english
+                        : selectedAnime.title
+                    }`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="border-blue-pop-out self-start p-2 rounded-lg blue-sky-gradient font-bold"

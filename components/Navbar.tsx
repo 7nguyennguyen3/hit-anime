@@ -12,6 +12,7 @@ import { useDebounce, useFetchSearchAnime } from "@/app/hook";
 import { AnimatePresence, motion } from "framer-motion";
 import { IoClose } from "react-icons/io5";
 import FetchingAnime from "./layout & common components/FetchingAnime";
+import classNames from "classnames";
 
 const navLinks = [
   { label: "Home", href: "/" },
@@ -160,7 +161,15 @@ const Navbar = () => {
             <div className="flex flex-col gap-3">
               {navLinks.map((link) => (
                 <Link href={link.href}>
-                  <button className="border border-b-4 border-r-4 p-3 w-[200px] rounded-lg text-lg font-semibold">
+                  <button
+                    className={classNames(
+                      "border border-b-4 border-r-4 p-3 w-[200px] rounded-lg text-lg font-semibold",
+                      {
+                        "border-orange-pop-out red-orange-gradient":
+                          link.href === "/search",
+                      }
+                    )}
+                  >
                     {link.label}
                   </button>
                 </Link>

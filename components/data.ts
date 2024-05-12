@@ -11,7 +11,6 @@ export const topGenres = [
   { genre: "Sci-Fi", id: 24 },
   { genre: "Slice of Life", id: 36 },
   { genre: "Supernatural", id: 37 },
-  { genre: "Thriller", id: 41 },
 ];
 
 export const genresId = [
@@ -36,6 +35,7 @@ export const genresId = [
   { genre: "Vampire", id: 32 },
   { genre: "Military", id: 38 },
   { genre: "Detective", id: 39 },
+  { genre: "Thriller", id: 41 },
   { genre: "Seinen", id: 42 },
   { genre: "Josei", id: 43 },
   { genre: "Award-Winning", id: 46 },

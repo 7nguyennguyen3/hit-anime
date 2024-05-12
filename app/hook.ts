@@ -53,8 +53,10 @@ export const useFetchAnimeByIds = () => {
           `https://api.jikan.moe/v4/anime/${id}`
         );
         responses.push(response);
+        console.log(response.data);
         await new Promise((resolve) => setTimeout(resolve, 350));
       }
+
       return responses.map((res) => res.data.data);
     },
     staleTime: 1000 * 60 * 30,
@@ -120,7 +122,10 @@ export function useSearchAnime(filter: any) {
       "searchAnime",
       filter.status,
       Array.from(filter.genres).join(","),
-      filter.debouncedValue,
+      filter.order_by,
+      filter.start_date,
+      filter.end_date,
+      filter.q,
     ],
     queryFn: fetchRecommendedAnime,
     initialPageParam: 1,
