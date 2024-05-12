@@ -178,17 +178,17 @@ const ShowTopAiringAnime = ({
                       openDetail(true);
                     }}
                   >
-                    <Image
+                    <img
                       src={anime.images.webp?.large_image_url || ""}
                       alt={anime.title_english + "Image" || "Anime image"}
-                      fill
-                      quality={100}
-                      sizes="(max-width: 400px) 100vw, 400px"
+                      loading="lazy"
+                      className="w-full h-full object-cover"
                     />
                     <AnimeStarRating anime={anime} />
                   </motion.div>
                 </button>
               ))}
+            {isFetchingNextPage && <FetchingAnime />}
 
             {showScrollTop && (
               <button

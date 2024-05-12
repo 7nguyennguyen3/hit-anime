@@ -267,12 +267,11 @@ const SearchPage = () => {
                   transition={{ duration: 0.5 }}
                   className="relative w-full max-w-[240px] h-[100vh] max-h-[300px] rounded-lg overflow-hidden mx-auto"
                 >
-                  <Image
+                  <img
                     src={anime.images.webp.large_image_url}
                     alt={anime.title_english + " Image" || "Anime image"}
-                    fill
-                    quality={100}
-                    sizes="(max-width: 400px) 100vw, 400px"
+                    loading="lazy"
+                    className="w-full h-full object-cover"
                   />
                   <AnimeStarRating anime={anime} />
                 </motion.div>

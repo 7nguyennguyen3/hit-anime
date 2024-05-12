@@ -47,13 +47,11 @@ const AnimeSwiper = ({
                   delay: index * 0.1,
                 }}
               >
-                <Image
+                <img
                   src={anime.images.webp.large_image_url}
                   alt={anime.title}
-                  fill
-                  sizes="(max-width: 400px) 100vw, 400px"
-                  quality={100}
-                  className="rounded-lg"
+                  className="w-full h-full object-cover rounded-lg"
+                  loading="lazy"
                 />
                 <AnimeStarRating anime={anime} />
               </motion.div>

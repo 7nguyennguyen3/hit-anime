@@ -36,7 +36,7 @@ const SearchAnimePage = () => {
         hover:scale-110"
       >
         <text className="red-orange-gradient text-xl font-semibold">
-          Try Advance Search
+          Try Cosmic Search
         </text>
         <FaArrowRight className="text-yellow-500" />
       </Link>
@@ -77,12 +77,11 @@ const SearchAnimePage = () => {
                     openDetail(true);
                   }}
                 >
-                  <Image
+                  <img
                     src={anime.images.webp.large_image_url}
                     alt={anime.title_english + "Image" || "Anime image"}
-                    fill
-                    quality={100}
-                    sizes="(max-width: 400px) 100vw, 400px"
+                    className="w-full h-full object-cover"
+                    loading="lazy"
                   />
                   <AnimeStarRating anime={anime} />
                 </motion.div>

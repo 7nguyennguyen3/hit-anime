@@ -53,7 +53,6 @@ export const useFetchAnimeByIds = () => {
           `https://api.jikan.moe/v4/anime/${id}`
         );
         responses.push(response);
-        console.log(response.data);
         await new Promise((resolve) => setTimeout(resolve, 350));
       }
 
