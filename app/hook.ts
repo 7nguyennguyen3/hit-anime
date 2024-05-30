@@ -41,7 +41,7 @@ export const useScrollTop = () => {
   return showScrollTop;
 };
 
-const animeIds = [52588, 58080, 53446, 51009, 18689, 48895, 32182];
+const animeIds = [28851, 32281, 53446, 199, 4181];
 
 export const useFetchAnimeByIds = () => {
   return useQuery({
