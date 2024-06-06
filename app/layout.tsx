@@ -4,6 +4,8 @@ import { Jost } from "next/font/google";
 import "./globals.css";
 import Footer from "@/components/Footer";
 import QueryClientProvider from "./QueryClientProvider";
+import Script from "next/script";
+import Head from "next/head";
 
 const jost = Jost({
   subsets: ["latin"],
