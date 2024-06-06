@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import QueryClientProvider from "./QueryClientProvider";
 import Script from "next/script";
 import Head from "next/head";
+import GoogleAnalyticScripts from "./GoogleAnalyticScripts";
 
 const jost = Jost({
   subsets: ["latin"],
@@ -24,6 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <GoogleAnalyticScripts />
       <body className={jost.className}>
         <QueryClientProvider>
           <Navbar />
