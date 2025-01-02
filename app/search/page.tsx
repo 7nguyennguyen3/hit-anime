@@ -5,7 +5,6 @@ import AnimeCardGridLayout from "@/components/layout & common components/AnimeCa
 import FetchingAnime from "@/components/layout & common components/FetchingAnime";
 import classNames from "classnames";
 import { motion } from "framer-motion";
-import Image from "next/image";
 import { useEffect, useState } from "react";
 import { FaLongArrowAltUp, FaRegQuestionCircle } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
@@ -259,6 +258,7 @@ const SearchPage = () => {
                 onClick={() => {
                   setSelectedAnime(anime);
                   openDetail(true);
+                  console.log(anime);
                 }}
               >
                 <motion.div

@@ -9,11 +9,11 @@ import { FaArrowRight } from "react-icons/fa";
 import { useFetchAnimeByIds } from "./hook";
 import { Anime } from "./browse/page";
 import ShowAnimeDetail from "./browse/ShowAnimeDetail";
+import { prefetchedAnimes } from "./_prefetchedAnime/anime";
 
 const Home = () => {
   const [selectedAnime, setSelectedAnime] = useState<Anime | null>(null);
   const [detail, openDetail] = useState(false);
-  const { data: anime = [], isLoading } = useFetchAnimeByIds();
 
   return (
     <div className="p-5 max-w-[1400px] min-h-screen mx-auto">
@@ -31,25 +31,23 @@ const Home = () => {
           </span>
           . Click on{" "}
           <span className="red-orange-gradient font-semibold">any anime</span>{" "}
-          below to check it out!
+          below to check it out! And I really recommend you try out the COSMIC
+          SEARCH.
         </text>
 
         <text className="font-bold text-3xl red-orange-gradient">
           Creator's Picks
         </text>
-        {isLoading || !anime.length ? (
-          <FetchingAnime />
-        ) : (
-          <AnimeSwiper
-            animeData={anime}
-            onAnimeClick={(anime) => {
-              setSelectedAnime(anime);
-              console.log(anime);
-              openDetail(true);
-            }}
-            maxSlidesPerView={5}
-          />
-        )}
+
+        <AnimeSwiper
+          animeData={prefetchedAnimes}
+          onAnimeClick={(anime) => {
+            setSelectedAnime(anime);
+            openDetail(true);
+          }}
+          maxSlidesPerView={5}
+        />
+
         <Link
           href="/browse"
           className="p-3 w-full max-w-[300px] rounded-lg border-orange-pop-out
