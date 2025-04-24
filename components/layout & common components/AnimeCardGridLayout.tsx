@@ -7,12 +7,12 @@ const AnimeCardGridLayout = ({ children }: PropsWithChildren) => {
             relative
         gap-5
         grid
-        xxs: grid-cols-1   
-        xs:grid-cols-2 
+        xxs: grid-cols-2   
+        xs:grid-cols-3 
         sm:grid-cols-3 
         md:grid-cols-4
-        lg:grid-cols-5
-        xl:grid-cols-6"
+        lg:grid-cols-4
+        xl:grid-cols-5"
     >
       {children}
     </div>

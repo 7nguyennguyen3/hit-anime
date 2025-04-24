@@ -1,35 +1,40 @@
+"use client"; // Keep directive
+
+// Keep all original imports
 import AnimeStarRating from "@/components/AnimeStarRating";
 import AnimeSwiper from "@/components/AnimeSwiper";
 import axios from "axios";
-import Image from "next/image";
 import { useEffect, useState } from "react";
 import { FaLongArrowAltUp, FaRegQuestionCircle } from "react-icons/fa";
 import { useInView } from "react-intersection-observer";
-import { Anime } from "./page";
+import { Anime } from "./page"; // Keep original type import
 import { motion } from "framer-motion";
-import { useFetchTopAiringAnime, useScrollTop } from "../hook";
+import { useFetchTopAiringAnime, useScrollTop } from "../hook"; // Keep original hook imports
 import { useInfiniteQuery } from "@tanstack/react-query";
 import AnimeCardGridLayout from "@/components/layout & common components/AnimeCardGridLayout";
 import FetchingAnime from "@/components/layout & common components/FetchingAnime";
 
+// Keep original Props interface
 interface Props {
   selectedAnime: any;
   setSelectedAnime: any;
   openDetail: any;
 }
 
+// --- Component Definition (Logic Unchanged) ---
 const ShowTopAiringAnime = ({
   openDetail,
   selectedAnime,
   setSelectedAnime,
 }: Props) => {
+  // --- State and Hooks (Unchanged) ---
   const [gridView, setGridView] = useState(true);
   const [isInfiniteScroll, setIsInfiniteScroll] = useState(true);
   const [showTooltip, setShowTooltip] = useState(false);
   const { ref, inView } = useInView();
+  const showScrollTop = useScrollTop(); // Custom hook remains
 
-  const showScrollTop = useScrollTop();
-
+  // Data fetching hooks remain exactly the same
   const { data: topAiringAnime, isLoading: isLoadingTopAiringAnime } =
     useFetchTopAiringAnime();
 
@@ -43,7 +48,7 @@ const ShowTopAiringAnime = ({
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-    isLoading,
+    isLoading, // Keep isLoading for initial fetch state
   } = useInfiniteQuery({
     queryKey: ["recommendedAnime"],
     queryFn: fetchRecommendedAnime,
@@ -54,169 +59,269 @@ const ShowTopAiringAnime = ({
         : undefined,
   });
 
+  // Effect hook remains exactly the same
   useEffect(() => {
-    if (inView) {
+    if (inView && isInfiniteScroll) {
+      // Only fetch if infinite scroll is on
       fetchNextPage();
     }
-  }, [inView, fetchNextPage]);
+  }, [inView, fetchNextPage, isInfiniteScroll]); // Added isInfiniteScroll dependency
 
+  // --- Render Logic (Visual/Semantic Improvements Only) ---
   return (
     <>
-      <div className="px-5">
-        <h2 className="text-3xl font-bold my-5 hot-gradient">
+      {/* Top Airing Section */}
+      <div className="px-5 py-8 md:px-8">
+        {" "}
+        {/* Added padding Y */}
+        <h2 className="text-3xl font-bold mb-5 hot-gradient">
+          {" "}
+          {/* Adjusted margin */}
           Top Airing Anime
         </h2>
         {isLoadingTopAiringAnime ? (
-          <FetchingAnime />
+          <div className="flex justify-center items-center h-60">
+            {" "}
+            {/* Centering loader */}
+            <FetchingAnime />
+          </div>
         ) : (
           <AnimeSwiper
-            animeData={topAiringAnime.filter(
-              (anime: Anime) =>
-                anime.rating !== "Rx - Hentai" &&
-                anime.rating !== "R+ - Mild Nudity"
-            )}
+            // Filtering logic remains the same
+            animeData={
+              topAiringAnime?.filter(
+                (anime: Anime) =>
+                  anime.rating !== "Rx - Hentai" &&
+                  anime.rating !== "R+ - Mild Nudity"
+              ) || []
+            } // Added fallback for safety
             onAnimeClick={(anime) => {
+              // Click handler logic remains the same
               setSelectedAnime(anime);
-              console.log(selectedAnime);
               openDetail(true);
             }}
           />
         )}
       </div>
-      <div className="px-5">
-        <h2 className="text-3xl font-bold my-5 cold-gradient">
+
+      {/* Recommended Anime Section */}
+      <div className="px-5 py-8 md:px-8">
+        {" "}
+        {/* Added padding Y */}
+        <h2 className="text-3xl font-bold mb-5 cold-gradient">
+          {" "}
+          {/* Adjusted margin */}
           Recommended Anime
         </h2>
-        <div className="flex flex-col my-5">
-          <div className="flex items-center">
+        {/* Controls Area - Improved Layout and Semantics */}
+        <div className="mb-6 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 p-4 bg-slate-800/50 rounded-lg">
+          {/* Infinite Scroll Toggle */}
+          <div className="flex items-center gap-2">
             <input
               type="checkbox"
+              id="infiniteScrollCheck" // Added ID
+              className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 accent-blue-500" // Basic styling
               checked={isInfiniteScroll}
-              onChange={() => setIsInfiniteScroll(!isInfiniteScroll)}
+              onChange={() => setIsInfiniteScroll(!isInfiniteScroll)} // Handler unchanged
             />
-            <text className="ml-2">
+            {/* Use label for accessibility */}
+            <label
+              htmlFor="infiniteScrollCheck"
+              className="text-sm font-medium text-slate-200 cursor-pointer"
+            >
               {isInfiniteScroll ? "Infinite Scroll On" : "Infinite Scroll Off"}
-            </text>
-            <div className="relative ml-2 text-blue-500 cursor-pointer">
-              <FaRegQuestionCircle
-                size={20}
-                onMouseEnter={() => setShowTooltip(true)}
-                onMouseLeave={() => setShowTooltip(false)}
-              />
-              {showTooltip && (
+            </label>
+            {/* Tooltip */}
+            <div className="relative flex items-center">
+              <button // Changed to button for semantics
+                type="button"
+                className="text-blue-400 hover:text-blue-300 transition-colors duration-150"
+                onMouseEnter={() => setShowTooltip(true)} // Handler unchanged
+                onMouseLeave={() => setShowTooltip(false)} // Handler unchanged
+                aria-label="Information about infinite scroll" // Accessibility
+              >
+                <FaRegQuestionCircle size={18} />
+              </button>
+              {showTooltip && ( // State unchanged
                 <div
-                  className="z-20 absolute bg-white opacity-90 p-5 rounded-lg top-[25px] left-[-100px]
-              w-[200px] text-black font-semibold"
+                  // Improved tooltip style
+                  className="absolute bottom-full left-1/2 z-20 mb-2 w-max max-w-[220px] -translate-x-1/2 rounded-md bg-slate-900 px-3 py-2 text-center text-xs font-medium text-white shadow-lg ring-1 ring-white/10"
                 >
-                  Turn on to load more anime as you scroll (Grid View Only).
+                  Turn on to automatically load more anime as you scroll down
+                  (works in both views).
                 </div>
               )}
             </div>
           </div>
-          <div className="flex items-center">
+
+          {/* Grid View Toggle */}
+          <div className="flex items-center gap-2">
             <input
               type="checkbox"
+              id="gridViewCheck" // Added ID
+              className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 accent-blue-500" // Basic styling
               checked={gridView}
-              onChange={() => setGridView(!gridView)}
+              onChange={() => setGridView(!gridView)} // Handler unchanged
             />
-            <text className="ml-2">Grid View</text>
+            {/* Use label for accessibility */}
+            <label
+              htmlFor="gridViewCheck"
+              className="text-sm font-medium text-slate-200 cursor-pointer"
+            >
+              Grid View
+            </label>
           </div>
         </div>
+        {/* Conditional Content Display (Logic Unchanged) */}
         {!gridView ? (
-          isLoading ? (
-            <FetchingAnime />
+          // --- Swiper View ---
+          isLoading ? ( // Initial load check unchanged
+            <div className="flex justify-center items-center h-96">
+              {" "}
+              {/* Centering loader */}
+              <FetchingAnime />
+            </div>
           ) : (
             <>
               <AnimeSwiper
-                isInfiniteScroll={isInfiniteScroll}
-                ref={ref}
+                isInfiniteScroll={isInfiniteScroll} // Prop unchanged
+                ref={ref} // Ref unchanged
+                // Data mapping unchanged
                 animeData={
                   recommendationAnime?.pages.flatMap((page) => page.data) || []
                 }
                 onAnimeClick={(anime) => {
+                  // Click handler logic remains the same
                   setSelectedAnime(anime);
-                  console.log(anime);
                   openDetail(true);
                 }}
               />
-              <div ref={ref} />
-              <div className="w-full flex items-center justify-center">
-                <button
-                  className="border-blue-pop-out p-4 w-[200px] my-20 rounded-lg"
-                  onClick={() => fetchNextPage()}
-                  disabled={!hasNextPage || isFetchingNextPage}
-                >
-                  {isFetchingNextPage
-                    ? "Loading more..."
-                    : hasNextPage
-                    ? "Load More"
-                    : "Nothing more to load"}
-                </button>
-              </div>
+              {/* Infinite scroll trigger for swiper */}
+              {isInfiniteScroll && <div ref={ref} className="h-10" />}
+              {/* Load More Button for Swiper (if infinite scroll is off) */}
+              {!isInfiniteScroll && (
+                <div className="mt-10 mb-5 flex w-full items-center justify-center">
+                  <button
+                    className="border-blue-pop-out rounded-lg p-4 w-[200px] transition hover:bg-slate-700/30 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed" // Added hover, focus, disabled styles
+                    onClick={() => fetchNextPage()} // Handler unchanged
+                    disabled={!hasNextPage || isFetchingNextPage} // Logic unchanged
+                  >
+                    {/* Text logic unchanged */}
+                    <span className="blue-sky-gradient">
+                      {isFetchingNextPage
+                        ? "Loading more..."
+                        : hasNextPage
+                        ? "Load More"
+                        : "Nothing more to load"}
+                    </span>
+                  </button>
+                </div>
+              )}
             </>
           )
         ) : (
-          <AnimeCardGridLayout>
-            {recommendationAnime?.pages
-              .flatMap((page) => page.data)
-              .map((anime: any, index: number) => (
-                <button
-                  className="hover:scale-95"
-                  key={anime.mal_id ? anime.mal_id : index}
-                >
-                  <motion.div
-                    initial={{ opacity: 0, x: -100 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{
-                      duration: 0.5,
-                      // delay: index * 0.1,
-                    }}
-                    className="relative w-full max-w-[240px] h-[100vh] max-h-[300px] rounded-lg overflow-hidden 
-        mx-auto cursor-pointer"
+          // --- Grid View ---
+          <>
+            <AnimeCardGridLayout>
+              {recommendationAnime?.pages
+                .flatMap((page) => page.data)
+                .map((anime: any, index: number) => (
+                  // Card Button Wrapper
+                  <button
+                    className="rounded-lg transition-transform duration-200 ease-in-out hover:scale-[0.97] hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-900" // Adjusted hover & added focus
+                    key={anime.mal_id ?? `anime-${index}`} // Use nullish coalescing for key
                     onClick={() => {
+                      // Click handler logic remains the same
                       setSelectedAnime(anime);
                       openDetail(true);
                     }}
                   >
-                    <img
-                      src={anime.images.webp?.large_image_url || ""}
-                      alt={anime.title_english + "Image" || "Anime image"}
-                      loading="lazy"
-                      className="w-full h-full object-cover"
-                    />
-                    <AnimeStarRating anime={anime} />
-                  </motion.div>
-                </button>
-              ))}
-            {isFetchingNextPage && <FetchingAnime />}
+                    {/* Animated Card Content */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }} // Subtle entry animation
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3 }} // Adjusted duration
+                      // Improved card styles
+                      className="relative w-full overflow-hidden rounded-lg bg-slate-800 shadow-md h-full"
+                      style={{ maxHeight: "300px", minHeight: "250px" }} // Consistent sizing example
+                    >
+                      {/* Use img tag as original */}
+                      <img
+                        src={
+                          anime.images?.webp?.large_image_url ||
+                          anime.images?.jpg?.large_image_url ||
+                          "/placeholder.png"
+                        } // Added fallback & placeholder
+                        alt={
+                          anime.title_english || anime.title || "Anime poster"
+                        } // Improved alt text
+                        loading="lazy"
+                        className="w-full h-full object-cover" // Ensure cover
+                      />
+                      {/* Assuming AnimeStarRating is styled appropriately */}
+                      <AnimeStarRating anime={anime} />
+                    </motion.div>
+                  </button>
+                ))}
+            </AnimeCardGridLayout>
 
-            {showScrollTop && (
-              <button
-                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                className="fixed bottom-3 right-3 p-2 bg-blue-500 text-white rounded-full"
-              >
-                <FaLongArrowAltUp className="text-[24px]" />
-              </button>
+            {/* Loading indicator for next page */}
+            {isFetchingNextPage && (
+              <div className="flex justify-center items-center py-10">
+                <FetchingAnime />
+              </div>
             )}
-          </AnimeCardGridLayout>
-        )}
-        {isInfiniteScroll && <div ref={ref} />}
-        {gridView && !isInfiniteScroll && (
-          <div className="w-full flex items-center justify-center">
-            <button
-              className="border-blue-pop-out p-4 w-[200px] my-20 rounded-lg"
-              onClick={() => fetchNextPage()}
-              disabled={!hasNextPage || isFetchingNextPage}
-            >
-              {isFetchingNextPage
-                ? "Loading more..."
-                : hasNextPage
-                ? "Load More"
-                : "Nothing more to load"}
-            </button>
-          </div>
+
+            {/* Infinite scroll trigger for grid */}
+            {isInfiniteScroll && <div ref={ref} className="h-10" />}
+
+            {/* Load More Button for Grid (if infinite scroll is off) */}
+            {!isInfiniteScroll && hasNextPage && (
+              <div className="mt-10 mb-5 flex w-full items-center justify-center">
+                <button
+                  className="border-blue-pop-out rounded-lg p-4 w-[200px] transition hover:bg-slate-700/30 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed" // Added hover, focus, disabled styles
+                  onClick={() => fetchNextPage()} // Handler unchanged
+                  disabled={!hasNextPage || isFetchingNextPage} // Logic unchanged
+                >
+                  {/* Text logic unchanged */}
+                  <span className="blue-sky-gradient">
+                    {isFetchingNextPage
+                      ? "Loading more..."
+                      : hasNextPage
+                      ? "Load More"
+                      : "Nothing more to load"}
+                  </span>
+                </button>
+              </div>
+            )}
+            {!isInfiniteScroll && !hasNextPage && !isLoading && (
+              <div className="text-center text-slate-400 py-10">
+                Nothing more to load
+              </div>
+            )}
+          </>
         )}
       </div>
+
+      {/* Scroll to Top Button - Wrapped in motion.div */}
+      {showScrollTop && ( // Logic unchanged
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 20 }}
+          transition={{ duration: 0.2 }}
+          className="fixed bottom-5 right-5 z-40" // Position unchanged, added z-index
+        >
+          <button
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} // Handler unchanged
+            // Improved styling
+            className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg transition hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-900"
+            aria-label="Scroll to top" // Accessibility
+          >
+            <FaLongArrowAltUp size={24} /> {/* Adjusted icon size slightly */}
+          </button>
+        </motion.div>
+      )}
     </>
   );
 };

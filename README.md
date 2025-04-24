@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Hit-Anime
 
-## Getting Started
+> Your friendly anime app for quickly searching and discovering new anime series and movies.
 
-First, run the development server:
+Live Site --> https://hit-anime.vercel.app 🚀
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## ✨ About This Project
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Hit-Anime started as a fun side project driven by a personal need: I wanted a way to search 🔍 for anime quickly without the constant back-and-forth loading between detail pages and list pages.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+This project became a great learning experience where I focused on:
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+- **Working with APIs:** Fetching and handling data from external anime sources.
+- **Data Manipulation:** Managing and filtering potentially large datasets efficiently. 📚
+- **Animation:** Bringing the interface to life using Framer Motion.
+- **UI/UX:** Designing a simple, clean, and user-friendly interface.
 
-## Learn More
+## 🚀 Key Features
 
-To learn more about Next.js, take a look at the following resources:
+- ✨ **Awesome Animation:** Smooth and engaging animations powered by Framer Motion.
+- 🔍 **Customized Search:** Filter and find anime based on various criteria.
+- 🎨 **Simple and Clean UI:** An intuitive and aesthetically pleasing interface.
+- ⚡ **Quick to Load:** Optimized for a fast user experience.
+- 📱 **Responsive Design:** Works seamlessly across desktop and mobile devices.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🛠️ Tech Stack
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+- **Framework:** Next.js
+- **Language:** TypeScript
+- **Styling:** TailwindCSS
+- **Animation:** Framer Motion
+- **Deployment:** Vercel
 
-## Deploy on Vercel
+## 🖼️ Gallery
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🏁 Getting Started
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+Follow these steps to get a local copy up and running.
+
+### Prerequisites
+
+- Node.js (v16 or later recommended)
+- npm or yarn
+
+### Installation & Running
+
+1.  **Clone the repository:**
+
+    ```bash
+    https://github.com/7nguyennguyen3/hit-anime
+    ```
+
+    _(Replace `YOUR_GITHUB_USERNAME` with your actual GitHub username)_
+
+2.  **Navigate to the project directory:**
+
+    ```bash
+    cd hit-anime
+    ```
+
+3.  **Install dependencies:**
+
+    ```bash
+    npm install
+    # or
+    # yarn install
+    ```
+
+4.  **Run the development server:**
+
+    ```bash
+    npm run dev
+    # or
+    # yarn dev
+    ```
+
+5.  Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+## 🔑 Environment Variables
+
+This project **does not require** any environment variables to run locally or for basic functionality. You can clone, install, and run it directly.

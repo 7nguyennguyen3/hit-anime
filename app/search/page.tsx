@@ -1,4 +1,5 @@
 "use client";
+
 import AnimeStarRating from "@/components/AnimeStarRating";
 import { genresId, topGenres } from "@/components/data";
 import AnimeCardGridLayout from "@/components/layout & common components/AnimeCardGridLayout";
@@ -6,54 +7,57 @@ import FetchingAnime from "@/components/layout & common components/FetchingAnime
 import classNames from "classnames";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { FaLongArrowAltUp, FaRegQuestionCircle } from "react-icons/fa";
-import { IoClose } from "react-icons/io5";
+import {
+  FaSearch,
+  FaLongArrowAltUp,
+  FaRegQuestionCircle,
+  FaTimes,
+} from "react-icons/fa";
 import { useInView } from "react-intersection-observer";
 import { Anime } from "../browse/page";
 import ShowAnimeDetail from "../browse/ShowAnimeDetail";
 import { useDebounce, useScrollTop, useSearchAnime } from "../hook";
 import DatePicker from "./DatePicker";
 import ResetFilter from "./ResetFilter";
-import StatusPicker from "./StatusPicker";
+import StatusPicker, { Status } from "./StatusPicker";
 
 const allGenres = [...topGenres, ...genresId];
 
 const SearchPage = () => {
   const [selectedAnime, setSelectedAnime] = useState<Anime | null>(null);
-  const [detail, openDetail] = useState(false);
-  const { ref, inView } = useInView();
-  const showScrollTop = useScrollTop();
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const { ref: infiniteScrollRef, inView: isInfiniteScrollTriggerInView } =
+    useInView({ threshold: 0.5 });
+  const showScrollTopButton = useScrollTop();
   const [ratingFilter, setRatingFilter] = useState(6);
-
   const [searchInput, setSearchInput] = useState("");
-  const debouncedSearchInput = useDebounce(searchInput, 1000);
-  const [status, setStatus] = useState("complete" || "airing" || "upcoming");
+  const debouncedSearchInput = useDebounce(searchInput, 700);
+  const [status, setStatus] = useState<Status>("complete");
   const [genres, setGenres] = useState(() => new Set<number>([]));
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [isExactMatch, setIsExactMatch] = useState(false);
+  const [showExactMatchTooltip, setShowExactMatchTooltip] = useState(false);
 
-  const [isSpecificSearch, setIsSpecificSearch] = useState(false);
-  const [showTooltip, setShowTooltip] = useState(false);
-
-  const addGenre = (genre: number) => {
-    setGenres((prevGenres) => new Set(prevGenres).add(genre));
+  const addGenre = (genreId: number) => {
+    setGenres((prevGenres) => new Set(prevGenres).add(genreId));
   };
 
-  const removeGenre = (genre: number) => {
+  const removeGenre = (genreId: number) => {
     setGenres((prevGenres) => {
       const newGenres = new Set(prevGenres);
-      newGenres.delete(genre);
+      newGenres.delete(genreId);
       return newGenres;
     });
   };
 
-  const searchQuery = isSpecificSearch
-    ? debouncedSearchInput.replace(/\s/g, "")
-    : debouncedSearchInput;
+  const searchQuery = isExactMatch
+    ? debouncedSearchInput.trim().replace(/\s+/g, "")
+    : debouncedSearchInput.trim();
 
-  const filter = {
+  const apiFilter = {
     sfw: true,
-    limit: 20,
+    limit: 24,
     genres: Array.from(genres).join(","),
     q: searchQuery,
     status: status,
@@ -63,87 +67,148 @@ const SearchPage = () => {
   };
 
   const {
-    data: recommendationAnime,
+    data: animePagesData,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-    isLoading,
-  } = useSearchAnime(filter);
+    isLoading: isInitiallyLoading,
+    isFetching: isFetchingData,
+  } = useSearchAnime(apiFilter);
 
-  const [filteredAnime, setFilteredAnime] = useState<any[]>([]);
-
-  useEffect(() => {
-    if (recommendationAnime) {
-      const animeWithRatings = recommendationAnime.pages.flatMap(
-        (pageData: any) =>
-          pageData.data.filter((anime: any) => anime.score >= ratingFilter)
-      );
-      setFilteredAnime(removeDuplicates(animeWithRatings, "mal_id"));
-    }
-  }, [ratingFilter, recommendationAnime]);
-
-  useEffect(() => {
-    if (inView && hasNextPage) {
-      fetchNextPage();
-    }
-  }, [inView, hasNextPage, fetchNextPage]);
+  const [filteredAnimeList, setFilteredAnimeList] = useState<Anime[]>([]);
 
   const removeDuplicates = <T extends { [key: string]: any }>(
     array: T[],
     key: string
   ): T[] => {
-    return array.reduce((accumulator: T[], current: T) => {
-      if (!accumulator.find((item) => item[key] === current[key])) {
-        accumulator.push(current);
+    const seen = new Set<any>();
+    return array.filter((item) => {
+      const identifier = item[key];
+      if (!seen.has(identifier)) {
+        seen.add(identifier);
+        return true;
       }
-      return accumulator;
-    }, []);
+      return false;
+    });
   };
 
+  useEffect(() => {
+    if (animePagesData?.pages) {
+      const allAnime = animePagesData.pages.flatMap(
+        (page: any) => page?.data || []
+      );
+
+      const animeMeetingRatingCriteria = allAnime.filter(
+        (anime: Anime) =>
+          status === "upcoming" || !anime.score || anime.score >= ratingFilter
+      );
+
+      const uniqueAnime = removeDuplicates(
+        animeMeetingRatingCriteria,
+        "mal_id"
+      );
+      setFilteredAnimeList(uniqueAnime);
+    } else {
+      setFilteredAnimeList([]);
+    }
+  }, [ratingFilter, animePagesData, status]);
+
+  useEffect(() => {
+    if (isInfiniteScrollTriggerInView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [
+    isInfiniteScrollTriggerInView,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  ]);
+
+  const handleAnimeCardClick = (anime: Anime) => {
+    setSelectedAnime(anime);
+    setIsDetailModalOpen(true);
+  };
+
+  const handleCloseDetailModal = () => {
+    setIsDetailModalOpen(false);
+    setSelectedAnime(null);
+  };
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
   return (
-    <div className="p-5 max-w-[1400px] mx-auto min-h-screen flex flex-col gap-7">
-      <div className="flex flex-col items-center gap-5">
-        <input
-          placeholder="Search for an anime"
-          className="p-2 pr-10 text-black rounded-lg w-full max-w-[500px] mr-auto"
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-        />
-        <div className="flex items-center mr-auto">
-          <label className="flex items-center gap-2">
+    <div
+      className="flex flex-col lg:flex-row gap-8 p-4 
+    sm:p-6 max-w-[1500px] mx-auto min-h-screen bg-gray-900
+    text-gray-100 font-inter"
+    >
+      {/* Filter Sidebar/Section */}
+      <aside
+        className="w-full lg:w-1/4 xl:w-1/5 flex flex-col gap-6 p-4 bg-gray-800 rounded-xl 
+      shadow-lg self-start lg:sticky lg:top-4 z-10"
+      >
+        <h2 className="text-xl font-semibold text-white border-b border-gray-700 pb-2">
+          Filters
+        </h2>
+
+        {/* Search Input & Options */}
+        <div className="flex flex-col gap-3">
+          <label htmlFor="anime-search" className="font-medium text-gray-300">
+            Search Title
+          </label>
+          <div className="relative">
+            <input
+              id="anime-search"
+              type="text"
+              placeholder="e.g., Naruto, One Piece..."
+              className="w-full p-2 pl-8 pr-4 text-black bg-gray-100 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+            />
+            <FaSearch className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          </div>
+          <div className="flex items-center gap-2 mt-1">
             <input
               type="checkbox"
-              checked={isSpecificSearch}
-              onChange={(e) => setIsSpecificSearch(e.target.checked)}
+              id="exact-match"
+              className="form-checkbox h-4 w-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500 focus:ring-offset-0"
+              checked={isExactMatch}
+              onChange={(e) => setIsExactMatch(e.target.checked)}
             />
-            Focus Search
-          </label>
-          <div className="relative ml-2 text-blue-500 cursor-pointer">
-            <FaRegQuestionCircle
-              size={20}
-              onMouseEnter={() => setShowTooltip(true)}
-              onMouseLeave={() => setShowTooltip(false)}
-            />
-            {showTooltip && (
-              <div
-                className="z-20 absolute bg-white opacity-90 p-5 rounded-lg top-[25px] left-[-100px]
-              w-[200px] text-black font-semibold"
-              >
-                Turn on to search for specific anime.
-              </div>
-            )}
+            <label htmlFor="exact-match" className="text-sm text-gray-300">
+              Exact Match
+            </label>
+            <div className="relative flex items-center">
+              <FaRegQuestionCircle
+                size={16}
+                className="text-blue-400 cursor-help ml-1"
+                onMouseEnter={() => setShowExactMatchTooltip(true)}
+                onMouseLeave={() => setShowExactMatchTooltip(false)}
+              />
+              {showExactMatchTooltip && (
+                <div className="absolute z-30 bg-gray-900 border border-gray-700 p-3 rounded-md shadow-lg top-full mt-2 left-1/2 transform -translate-x-1/2 w-48 text-xs text-gray-200">
+                  Removes spaces for precise title matching (e.g., 'Attack
+                  Titan' becomes 'AttackTitan').
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
-      {searchInput !== "" && (
-        <text className="font-semibold text-2xl">{`Result for: "${searchInput}"`}</text>
-      )}
-      <StatusPicker setStatus={setStatus} status={status} />
 
-      <div className="flex xs:flex-row xxs:flex-col gap-5">
-        <div className="flex items-center gap-2">
-          <label htmlFor="ratingFilter" className="mr-2">
-            Minimum Rating:
+        {/* Status Picker */}
+        <StatusPicker setStatus={setStatus} status={status} />
+
+        {/* Rating Filter */}
+        <div className="flex flex-col gap-2">
+          <label
+            htmlFor="ratingFilter"
+            className="font-medium text-gray-300 flex justify-between items-center"
+          >
+            Minimum Rating:{" "}
+            <span className="font-bold text-blue-400 text-lg">
+              {ratingFilter}
+            </span>
           </label>
           <input
             type="range"
@@ -151,11 +216,87 @@ const SearchPage = () => {
             name="ratingFilter"
             min="1"
             max="9"
+            step="1"
             value={ratingFilter}
             onChange={(e) => setRatingFilter(Number(e.target.value))}
+            className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
+            // Disable if status is 'upcoming' as ratings may not apply
+            disabled={status === "upcoming"}
           />
-          <span className="ml-2">{ratingFilter}</span>
+          {status === "upcoming" && (
+            <span className="text-xs text-gray-400 italic">
+              Rating filter disabled for 'Upcoming' status.
+            </span>
+          )}
         </div>
+
+        <DatePicker
+          setStartDate={setStartDate}
+          addGenre={addGenre}
+          genres={genres}
+          removeGenre={removeGenre}
+          endDate={endDate}
+          setEndDate={setEndDate}
+          startDate={startDate}
+        />
+
+        {/* Genre Filters */}
+        <div className="flex flex-col gap-3">
+          <h3 className="font-medium text-gray-300 border-t border-gray-700 pt-3">
+            Top Genres
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {topGenres.map((genre) => {
+              const isSelected = genres.has(genre.id);
+              return (
+                <button
+                  key={genre.id}
+                  onClick={() => {
+                    if (isSelected) {
+                      removeGenre(genre.id);
+                    } else {
+                      addGenre(genre.id);
+                    }
+                  }}
+                  className={classNames(
+                    "px-3 py-1 text-sm rounded-full border transition-colors duration-200 ease-in-out",
+                    {
+                      "bg-blue-600 border-blue-500 text-white hover:bg-blue-700":
+                        isSelected,
+                      "bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600 hover:border-gray-500":
+                        !isSelected,
+                    }
+                  )}
+                >
+                  {genre.genre}
+                </button>
+              );
+            })}
+            {/* Optionally add a button to show all genres in a modal */}
+            {/* <button className="text-sm text-blue-400 hover:underline mt-1">Show all genres...</button> */}
+          </div>
+          {/* Display selected non-top genres (if any) */}
+          {Array.from(genres)
+            .filter((id) => !topGenres.some((tg) => tg.id === id))
+            .map((genreId) => {
+              const genre = allGenres.find((g) => g.id === genreId);
+              return genre ? (
+                <div
+                  key={genreId}
+                  className="flex items-center gap-2 text-sm bg-gray-600 px-2 py-1 rounded"
+                >
+                  <span>{genre.genre}</span>
+                  <button
+                    onClick={() => removeGenre(genreId)}
+                    className="text-red-400 hover:text-red-300"
+                  >
+                    <FaTimes size={12} />
+                  </button>
+                </div>
+              ) : null;
+            })}
+        </div>
+
         <ResetFilter
           setEndDate={setEndDate}
           setGenres={setGenres}
@@ -163,149 +304,144 @@ const SearchPage = () => {
           setStatus={setStatus}
           setSearchInput={setSearchInput}
         />
-      </div>
+      </aside>
 
-      <div className="flex flex-wrap items-center gap-5 w-full">
-        <text className="font-semibold text-lg">Filtering for:</text>
-        <div className="border p-2 rounded-lg">{status}</div>
-        {Array.from(genres).map((genreId) => {
-          const genre = allGenres.find((g) => g.id === genreId);
-          return genre ? (
-            <div key={genreId} className="border p-2 rounded-lg relative">
-              <button
-                className="absolute top-[-12px] right-[-12px] text-[26px] 
-                text-blue-500 font-bold"
-                onClick={() => removeGenre(genre.id)}
-              >
-                <IoClose />
-              </button>
-              {genre.genre}
-            </div>
-          ) : null;
-        })}
-        {startDate && (
-          <div className="border p-2 rounded-lg relative">
-            <button
-              className="absolute top-[-12px] right-[-12px] text-[26px] 
-              text-blue-500 font-bold"
-              onClick={() => setStartDate("")}
-            >
-              <IoClose />
-            </button>
-            Started by: {startDate}
-          </div>
+      {/* Main Content Area */}
+      <main className="w-full lg:w-3/4 xl:w-4/5 flex flex-col gap-5">
+        {/* Result Text */}
+        {searchQuery && !isInitiallyLoading && (
+          <p className="font-semibold text-xl sm:text-2xl text-gray-200">
+            {`Showing results for: "${searchQuery}"`}
+          </p>
         )}
-        {endDate && (
-          <div className="border p-2 rounded-lg relative">
-            <button
-              className="absolute top-[-12px] right-[-12px] text-[26px] 
-              text-blue-500 font-bold"
-              onClick={() => setEndDate("")}
-            >
-              <IoClose />
-            </button>
-            Ended by: {endDate}
-          </div>
+        {!searchQuery && !isInitiallyLoading && (
+          <p className="font-semibold text-xl sm:text-2xl text-gray-200">
+            Browse Anime
+          </p>
         )}
-      </div>
 
-      <DatePicker
-        setEndDate={setEndDate}
-        setStartDate={setStartDate}
-        addGenre={addGenre}
-        removeGenre={removeGenre}
-        genres={genres}
-      />
-
-      <div className="max-w-[500px] w-full grid sm:grid-cols-4 xs:grid-cols-3 xxs:grid-cols-2 gap-5">
-        {topGenres.map((genre) => (
-          <div
-            key={genre.id}
-            onClick={() => {
-              if (genres.has(genre.id)) {
-                removeGenre(genre.id);
-              } else {
-                addGenre(genre.id);
-              }
-            }}
-            className={classNames(
-              "border rounded-lg h-[30px] flex items-center p-2",
-              {
-                "bg-green-800 border-pop-out": genres.has(genre.id),
-              }
-            )}
-          >
-            {genre.genre}
-          </div>
-        ))}
-      </div>
-      <div className="my-10">
-        <AnimeCardGridLayout>
-          {isLoading ? (
-            <FetchingAnime />
-          ) : (
-            recommendationAnime &&
-            (status === "upcoming"
-              ? removeDuplicates(
-                  recommendationAnime.pages.flatMap((page) => page.data),
-                  "mal_id"
-                )
-              : filteredAnime
-            ).map((anime: any, index: number) => (
-              <button
-                key={index}
-                className="hover:scale-95"
-                onClick={() => {
-                  setSelectedAnime(anime);
-                  openDetail(true);
-                  console.log(anime);
-                }}
-              >
-                <motion.div
-                  initial={{ opacity: 0, x: -100 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5 }}
-                  className="relative w-full max-w-[240px] h-[100vh] max-h-[300px] rounded-lg overflow-hidden mx-auto"
+        {/* Anime Grid */}
+        <div className="flex-grow">
+          <AnimeCardGridLayout>
+            {/* Initial Loading State */}
+            {isInitiallyLoading ? (
+              // Render skeleton loaders based on the limit
+              Array.from({ length: apiFilter.limit }).map((_, index) => (
+                <FetchingAnime key={`skeleton-${index}`} />
+              ))
+            ) : filteredAnimeList.length === 0 && !isFetchingData ? (
+              <div className="col-span-full flex flex-col items-center justify-center text-center py-10 h-60 bg-gray-800 rounded-lg">
+                <img
+                  src="https://placehold.co/100x100/718096/E2E8F0?text=Oops!"
+                  alt="No results icon"
+                  className="w-16 h-16 mb-4 opacity-50 rounded-full"
+                />
+                <p className="text-xl font-semibold text-gray-400">
+                  No Anime Found
+                </p>
+                <p className="text-gray-500">
+                  Try adjusting your filters or search terms.
+                </p>
+              </div>
+            ) : (
+              filteredAnimeList.map((anime: Anime, index: number) => (
+                <motion.button
+                  key={anime.mal_id || index}
+                  className="relative group focus:outline-none focus:ring-2 focus:ring-offset-2
+                             focus:ring-offset-gray-900 focus:ring-blue-500 rounded-lg"
+                  onClick={() => handleAnimeCardClick(anime)}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.3,
+                    delay: (index % apiFilter.limit) * 0.05,
+                  }} // Stagger animation
                 >
-                  <img
-                    src={anime.images.webp.large_image_url}
-                    alt={anime.title_english + " Image" || "Anime image"}
-                    loading="lazy"
-                    className="w-full h-full object-cover"
-                  />
-                  <AnimeStarRating anime={anime} />
-                </motion.div>
-              </button>
-            ))
-          )}
-          {isFetchingNextPage && <FetchingAnime />}
-        </AnimeCardGridLayout>
-        {showScrollTop && (
-          <button
-            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            className="fixed bottom-3 right-3 p-2 bg-blue-500 text-white rounded-full"
-          >
-            <FaLongArrowAltUp className="text-[24px]" />
-          </button>
-        )}
-      </div>
-      <div ref={ref} />
-      {(ratingFilter === 8 || genres.size >= 3 || !hasNextPage) && (
-        <div className="w-full flex items-center justify-center">
-          <button
-            className={classNames("border-blue-pop-out p-3 my-5 rounded-lg", {
-              "opacity-50 cursor-not-allowed": !hasNextPage,
-            })}
-            disabled={!hasNextPage}
-            onClick={() => fetchNextPage()}
-          >
-            {hasNextPage ? "Load More" : "Out of Anime"}
-          </button>
+                  {/* This is the container for the image and overlay */}
+                  <div
+                    className="relative w-full aspect-[2/3] rounded-lg
+                               overflow-hidden shadow-md transition-transform duration-300
+                               ease-in-out group-hover:scale-105" // <<< aspect-[2/3] is here!
+                  >
+                    <img
+                      src={
+                        anime.images?.webp?.large_image_url ||
+                        anime.images?.jpg?.large_image_url ||
+                        "https://placehold.co/240x360/374151/9CA3AF?text=No+Image"
+                      }
+                      alt={anime.title_english || anime.title || "Anime image"}
+                      loading="lazy"
+                      className="w-full h-full object-cover" // <<< Fills the container
+                      onError={(e) =>
+                        (e.currentTarget.src =
+                          "https://placehold.co/240x360/374151/9CA3AF?text=Error")
+                      }
+                    />
+                    {/* Overlay Div */}
+                    <div
+                      className="absolute inset-0 bg-gradient-to-t from-black/80
+                                 via-black/30 to-transparent opacity-0 group-hover:opacity-100
+                                 transition-opacity duration-300 flex flex-col justify-end p-3"
+                    >
+                      <h3 className="text-white text-sm font-semibold drop-shadow-md line-clamp-2">
+                        {anime.title_english || anime.title}
+                      </h3>
+                    </div>
+                    <AnimeStarRating anime={anime} />
+                  </div>
+                </motion.button>
+              ))
+            )}
+
+            {/* Loading More Indicator */}
+            {isFetchingNextPage &&
+              // Render skeleton loaders when fetching next page
+              Array.from({ length: 4 }).map(
+                (
+                  _,
+                  index // Show fewer skeletons for loading more
+                ) => <FetchingAnime key={`loading-more-${index}`} />
+              )}
+          </AnimeCardGridLayout>
         </div>
+
+        {/* Infinite Scroll Trigger & Load More Button/Indicator */}
+        <div
+          ref={infiniteScrollRef}
+          className="h-10 flex items-center justify-center mt-8"
+        >
+          {!isInitiallyLoading &&
+            !isFetchingNextPage &&
+            !hasNextPage &&
+            filteredAnimeList.length > 0 && (
+              <p className="text-gray-500">You've reached the end!</p>
+            )}
+          {hasNextPage && !isFetchingNextPage && (
+            <button
+              onClick={() => fetchNextPage()}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            >
+              Load More
+            </button>
+          )}
+        </div>
+      </main>
+
+      {/* Scroll To Top Button */}
+      {showScrollTopButton && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-5 right-5 p-3 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-all duration-300 ease-in-out z-20 animate-bounce"
+          aria-label="Scroll to top"
+        >
+          <FaLongArrowAltUp size={24} />
+        </button>
       )}
+
+      {/* Details Modal */}
       <ShowAnimeDetail
-        detail={detail}
-        openDetail={openDetail}
+        detail={isDetailModalOpen} // Use state variable for modal visibility
+        openDetail={handleCloseDetailModal} // Pass the close handler
         selectedAnime={selectedAnime}
       />
     </div>

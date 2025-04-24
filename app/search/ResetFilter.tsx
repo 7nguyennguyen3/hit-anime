@@ -1,5 +1,8 @@
+import { IoReload } from "react-icons/io5";
+import { Status } from "./StatusPicker";
+
 interface ResetFilterProps {
-  setStatus: React.Dispatch<React.SetStateAction<string>>;
+  setStatus: React.Dispatch<React.SetStateAction<Status>>;
   setGenres: React.Dispatch<React.SetStateAction<Set<number>>>;
   setStartDate: React.Dispatch<React.SetStateAction<string>>;
   setEndDate: React.Dispatch<React.SetStateAction<string>>;
@@ -29,10 +32,24 @@ const ResetFilter = ({
 
   return (
     <button
-      className="border rounded-lg p-2 self-start w-full max-w-[160px]"
+      type="button"
       onClick={resetFilters}
+      className="
+      w-full  
+      mt-2  
+      flex items-center justify-center gap-2 
+      px-4 py-2 
+      bg-gray-600 text-gray-100 
+      border border-transparent 
+      rounded-lg 
+      text-sm font-medium 
+      shadow-sm 
+      hover:bg-gray-500 
+      transition-colors duration-150 ease-in-out 
+    "
     >
-      Reset Filter
+      <IoReload className="w-4 h-4" aria-hidden="true" />
+      <span>Reset Filters</span>
     </button>
   );
 };

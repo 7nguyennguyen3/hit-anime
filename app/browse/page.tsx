@@ -5,6 +5,7 @@ import ShowAnimeDetail from "./ShowAnimeDetail";
 import ShowTopAiringAnime from "./ShowTopAiringAnime";
 
 export type Anime = {
+  mal_id: number;
   title_english: string;
   title: string;
   episodes: number;
@@ -17,6 +18,9 @@ export type Anime = {
   synopsis: string;
   images: {
     webp: {
+      large_image_url: string;
+    };
+    jpg?: {
       large_image_url: string;
     };
   };
